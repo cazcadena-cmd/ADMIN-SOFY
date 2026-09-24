@@ -79,9 +79,9 @@
 
   <!-- Pestañas -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="cambiarTab('comercios')">🏪 Comercios</button>
-    <button class="tab-btn" onclick="cambiarTab('productos')">📦 Productos</button>
-    <button class="tab-btn" onclick="cambiarTab('banners')">🎬 Hero Slider / Videos</button>
+    <button class="tab-btn active" onclick="cambiarTab('comercios', event)">🏪 Comercios</button>
+    <button class="tab-btn" onclick="cambiarTab('productos', event)">📦 Productos</button>
+    <button class="tab-btn" onclick="cambiarTab('banners', event)">🎬 Hero Slider / Videos</button>
   </div>
 
   <!-- TAB COMERCIOS -->
@@ -176,7 +176,7 @@
     </div>
   </div>
 
-  <!-- MODAL BANNER / HERO SLIDER (SOPORTA VIDEOS MP4 E IMÁGENES) -->
+  <!-- MODAL BANNER / HERO SLIDER -->
   <div class="modal-overlay" id="modalBanner">
     <div class="modal">
       <h2 id="modalBannerTitle">Gestión de Video / Banner Hero Slider</h2>
@@ -241,11 +241,11 @@
       actualizarSelectsNegocios();
     }
 
-    function cambiarTab(tabName) {
+    function cambiarTab(tabName, evt) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
-      event.target.classList.add('active');
+      if (evt && evt.target) evt.target.classList.add('active');
       document.getElementById('tab-' + tabName).classList.add('active');
     }
 
@@ -336,6 +336,17 @@
       });
       html += `</tbody></table>`;
       document.getElementById('tabla-banners').innerHTML = html;
+    }
+
+    // --- ACTUALIZAR DESPLEGABLES DE NEGOCIOS ---
+    function actualizarSelectsNegocios() {
+      const defaultOption = '<option value="">🌟 HERO SLIDER PRINCIPAL (Global / Inicio)</option>';
+      const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
+      
+      const prodSelect = document.getElementById('prod_business_id');
+      const bannerSelect = document.getElementById('banner_business_id');
+      if (prodSelect) prodSelect.innerHTML = options;
+      if (bannerSelect) bannerSelect.innerHTML = defaultOption + options;
     }
 
     // --- SUBIR ARCHIVOS ---
@@ -438,22 +449,23 @@
     async function guardarBanner(e) {
       e.preventDefault();
       const btn = document.getElementById('btnGuardarBanner');
-      btn.disabled = true; btn.innerText = 'Guardando...';
+      btn.disabled = true; 
+      btn.innerText = 'Guardando...';
 
       try {
         const id = document.getElementById('banner_id').value;
         const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
         const videoUploadedUrl = await subirArchivo('videos', document.getElementById('banner_video_file'));
         const externalVideoUrl = document.getElementById('banner_video_url').value.trim();
+        const selectedBusiness = document.getElementById('banner_business_id').value;
 
         const payload = {
-          business_id: document.getElementById('banner_business_id').value || null,
-          title: document.getElementById('banner_title').value
+          title: document.getElementById('banner_title').value || 'Video Hero Slider',
+          business_id: (selectedBusiness && selectedBusiness !== '') ? selectedBusiness : null
         };
 
         if (imgUrl) payload.image_url = imgUrl;
         
-        // Priorizar video subido, luego URL externa
         if (videoUploadedUrl) {
           payload.video_url = videoUploadedUrl;
         } else if (externalVideoUrl) {
@@ -470,72 +482,18 @@
 
         cerrarModales();
         await cargarBanners();
-        mostrarToast(id ? 'Elemento de Slider actualizado' : 'Video/Banner agregado al Slider');
+        mostrarToast(id ? 'Elemento actualizado' : 'Video guardado en Hero Slider');
       } catch (err) { 
-        mostrarToast('Error: ' + err.message, true); 
+        console.error('Detalle error Supabase:', err);
+        mostrarToast('Error Supabase: ' + (err.message || err.details || 'Error 400'), true); 
       } finally {
-        btn.disabled = false; btn.innerText = 'Guardar en Slider';
+        btn.disabled = false; 
+        btn.innerText = 'Guardar en Slider';
       }
     }
 
-    // --- ACTUALIZAR DESPLEGABLES DE NEGOCIOS ---
-function actualizarSelectsNegocios() {
-  // Opción explícita para indicar que el video va al Hero Slider de Inicio
-  const defaultOption = '<option value="">🌟 HERO SLIDER PRINCIPAL (Global / Inicio)</option>';
-  const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
-  
-  document.getElementById('prod_business_id').innerHTML = options;
-  document.getElementById('banner_business_id').innerHTML = defaultOption + options;
-}
+    // --- MANEJO DE MODALES Y ELIMINACIÓN ---
 
-// --- GUARDAR BANNER O VIDEO DEL HERO SLIDER ---
-async function guardarBanner(e) {
-  e.preventDefault();
-  const btn = document.getElementById('btnGuardarBanner');
-  btn.disabled = true; 
-  btn.innerText = 'Guardando...';
-
-  try {
-    const id = document.getElementById('banner_id').value;
-    const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
-    const videoUploadedUrl = await subirArchivo('videos', document.getElementById('banner_video_file'));
-    const externalVideoUrl = document.getElementById('banner_video_url').value.trim();
-    const selectedBusiness = document.getElementById('banner_business_id').value;
-
-    // Construcción limpia del objeto para Supabase
-    const payload = {
-      title: document.getElementById('banner_title').value || 'Video Hero Slider',
-      business_id: (selectedBusiness && selectedBusiness !== '') ? selectedBusiness : null
-    };
-
-    if (imgUrl) payload.image_url = imgUrl;
-    
-    // Asigna el video subido al bucket o la URL externa pegada
-    if (videoUploadedUrl) {
-      payload.video_url = videoUploadedUrl;
-    } else if (externalVideoUrl) {
-      payload.video_url = externalVideoUrl;
-    }
-
-    if (id) {
-      const { error } = await supabaseClient.from('shop_banners').update(payload).eq('id', id);
-      if (error) throw error;
-    } else {
-      const { error } = await supabaseClient.from('shop_banners').insert([payload]);
-      if (error) throw error;
-    }
-
-    cerrarModales();
-    await cargarBanners();
-    mostrarToast(id ? 'Elemento actualizado' : 'Video guardado en Hero Slider');
-  } catch (err) { 
-    console.error('Detalle error Supabase:', err);
-    mostrarToast('Error Supabase: ' + (err.message || err.details || 'Error 400'), true); 
-  } finally {
-    btn.disabled = false; 
-    btn.innerText = 'Guardar en Slider';
-  }
-}
     function abrirModalComercio(id = null) {
       document.getElementById('formComercio').reset();
       document.getElementById('shop_id').value = '';
