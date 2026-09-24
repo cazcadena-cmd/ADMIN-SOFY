@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrador de Comercios - Supabase</title>
+  
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f6f8; color: #333; }
+    h1 { color: #134989; margin-bottom: 20px; }
+    
+    .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+    .btn-primary { background-color: #134989; color: white; }
+    .btn-primary:hover { background-color: #0e3768; }
+    .btn-success { background-color: #275C98; color: white; }
+    .btn-success:hover { background-color: #1e4776; }
+    .btn-danger { background-color: #d9534f; color: white; }
+    .btn-danger:hover { background-color: #c9302c; }
+    .btn-secondary { background-color: #6c757d; color: white; }
+
+    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; }
+    th { background-color: #275C98; color: white; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+    tr:hover { background-color: #f9fbfd; }
+
+    img.thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
+    
+    /* Modal / Formulario */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+    .modal { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .modal h2 { margin-top: 0; color: #134989; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #555; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    .form-row { display: flex; gap: 10px; }
+    .form-row .form-group { flex: 1; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  </style>
+
+  <!-- SDK oficial de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Librería SheetJS para exportar a Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <h1>Panel de Administración de Comercios</h1>
+
+  <div class="toolbar">
+    <button class="btn-primary" onclick="abrirModalCrear()">➕ Nuevo Comercio</button>
+    <button class="btn-success" onclick="exportarExcel()">📊 Descargar Excel</button>
+  </div>
+
+  <!-- Contenedor de la Tabla -->
+  <div id="tabla-container">Cargando comercios...</div>
+
+  <!-- Modal Formulario (Crear / Editar) -->
+  <div class="modal-overlay" id="modalForm">
+    <div class="modal">
+      <h2 id="modalTitle">Comercio</h2>
+      <form id="formComercio" onsubmit="guardarComercio(event)">
+        <input type="hidden" id="shop_id">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre del Comercio *</label>
+            <input type="text" id="name" required>
+          </div>
+          <div class="form-group">
+            <label>Categoría</label>
+            <input type="text" id="category">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="description" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" id="address">
+          </div>
+          <div class="form-group">
+            <label>WhatsApp</label>
+            <input type="text" id="whatsapp">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Subir Logo (Bucket: logos)</label>
+            <input type="file" id="logo_file" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Subir Video (Bucket: videos)</label>
+            <input type="file" id="video_file" accept="video/*">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Instagram Link</label>
+            <input type="text" id="instagram_link">
+          </div>
+          <div class="form-group">
+            <label>Facebook Link</label>
+            <input type="text" id="facebook_link">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" id="btnGuardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Credenciales de Supabase
+    const SUPABASE_URL = 'https://jpukgeomsmwyxtqnpcsd.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWtnZW9tc213eXh0cW5wY3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDA3MzQsImV4cCI6MjEwNDU3NjczNH0.aALmQGfEkU4YCJM_9yUGJoUYfFVSLaZe0tnOlznKm54';
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let comerciosLocales = [];
+
+    // Cargar comercios al iniciar
+    document.addEventListener('DOMContentLoaded', cargarComercios);
+
+    async function cargarComercios() {
+      const { data, error } = await supabaseClient
+        .from('shops')
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (error) {
+        alert('Error cargando comercios: ' + error.message);
+        return;
+      }
+
+      comerciosLocales = data || [];
+      renderizarTabla(comerciosLocales);
+    }
+
+    function renderizarTabla(datos) {
+      if (datos.length === 0) {
+        document.getElementById('tabla-container').innerHTML = '<p>No hay comercios registrados.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Logo</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>WhatsApp</th>
+              <th>Dirección</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      datos.forEach(c => {
+        const logoImg = c.logo ? `<img src="${c.logo}" class="thumb" alt="logo">` : '—';
+        html += `
+          <tr>
+            <td>${c.id}</td>
+            <td>${logoImg}</td>
+            <td><strong>${c.name || ''}</strong></td>
+            <td>${c.category || ''}</td>
+            <td>${c.whatsapp || ''}</td>
+            <td>${c.address || ''}</td>
+            <td>
+              <button class="btn-primary" style="padding: 5px 10px;" onclick="abrirModalEditar(${c.id})">✏️ Editar</button>
+              <button class="btn-danger" style="padding: 5px 10px;" onclick="eliminarComercio(${c.id})">🗑️ Eliminar</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      document.getElementById('tabla-container').innerHTML = html;
+    }
+
+    // Modal Handlers
+    function abrirModalCrear() {
+      document.getElementById('modalTitle').innerText = 'Agregar Nuevo Comercio';
+      document.getElementById('formComercio').reset();
+      document.getElementById('shop_id').value = '';
+      document.getElementById('modalForm').style.display = 'flex';
+    }
+
+    function abrirModalEditar(id) {
+      const c = comerciosLocales.find(item => item.id === id);
+      if (!c) return;
+
+      document.getElementById('modalTitle').innerText = 'Editar Comercio #' + c.id;
+      document.getElementById('shop_id').value = c.id;
+      document.getElementById('name').value = c.name || '';
+      document.getElementById('category').value = c.category || '';
+      document.getElementById('description').value = c.description || '';
+      document.getElementById('address').value = c.address || '';
+      document.getElementById('whatsapp').value = c.whatsapp || '';
+      document.getElementById('instagram_link').value = c.instagram_link || '';
+      document.getElementById('facebook_link').value = c.facebook_link || '';
+      
+      document.getElementById('modalForm').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalForm').style.display = 'none';
+    }
+
+    // Subir archivo a Supabase Storage
+    async function subirArchivo(bucketName, fileInput) {
+      const file = fileInput.files[0];
+      if (!file) return null;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      const { data, error } = await supabaseClient.storage.from(bucketName).upload(fileName, file);
+      if (error) {
+        throw new Error(`Error en bucket ${bucketName}: ` + error.message);
+      }
+
+      const { data: publicUrlData } = supabaseClient.storage.from(bucketName).getPublicUrl(fileName);
+      return publicUrlData.publicUrl;
+    }
+
+    // Guardar (Crear / Actualizar)
+    async function guardarComercio(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnGuardar');
+      btn.innerText = 'Guardando...';
+      btn.disabled = true;
+
+      try {
+        const id = document.getElementById('shop_id').value;
+        const logoFile = document.getElementById('logo_file');
+        const videoFile = document.getElementById('video_file');
+
+        let logoUrl = null;
+        let videoUrl = null;
+
+        if (logoFile.files.length > 0) {
+          logoUrl = await subirArchivo('logos', logoFile);
+        }
+
+        if (videoFile.files.length > 0) {
+          videoUrl = await subirArchivo('videos', videoFile);
+        }
+
+        const payload = {
+          name: document.getElementById('name').value,
+          category: document.getElementById('category').value,
+          description: document.getElementById('description').value,
+          address: document.getElementById('address').value,
+          whatsapp: document.getElementById('whatsapp').value,
+          instagram_link: document.getElementById('instagram_link').value,
+          facebook_link: document.getElementById('facebook_link').value
+        };
+
+        if (logoUrl) payload.logo = logoUrl;
+        if (videoUrl) payload.video = videoUrl;
+
+        let response;
+        if (id) {
+          response = await supabaseClient.from('shops').update(payload).eq('id', id);
+        } else {
+          response = await supabaseClient.from('shops').insert([payload]);
+        }
+
+        if (response.error) throw response.error;
+
+        cerrarModal();
+        await cargarComercios();
+        alert('Comercio guardado exitosamente.');
+      } catch (err) {
+        alert('Ocurrió un error: ' + err.message);
+      } finally {
+        btn.innerText = 'Guardar';
+        btn.disabled = false;
+      }
+    }
+
+    // Eliminar Comercio
+    async function eliminarComercio(id) {
+      if (!confirm(`¿Estás seguro de que deseas eliminar el comercio #${id}?`)) return;
+
+      const { error } = await supabaseClient.from('shops').delete().eq('id', id);
+      if (error) {
+        alert('Error al eliminar: ' + error.message);
+      } else {
+        await cargarComercios();
+        alert('Comercio eliminado correctamente.');
+      }
+    }
+
+    // Exportar a Excel con SheetJS
+    function exportarExcel() {
+      if (comerciosLocales.length === 0) {
+        alert('No hay datos para exportar.');
+        return;
+      }
+      const worksheet = XLSX.utils.json_to_sheet(comerciosLocales);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Comercios');
+      XLSX.writeFile(workbook, 'Comercios_Supabase.xlsx');
+    }
+  </script>
+</body>
+</html>
