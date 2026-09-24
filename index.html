@@ -3,318 +3,408 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administrador de Comercios - Supabase</title>
+  <title>Administrador General - Supabase</title>
   
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f6f8; color: #333; }
-    h1 { color: #134989; margin-bottom: 20px; }
+    h1 { color: #134989; margin-bottom: 10px; }
     
-    .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+    /* Pestañas */
+    .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #275C98; }
+    .tab-btn { padding: 10px 20px; background: #e0e0e0; border: none; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: bold; }
+    .tab-btn.active { background: #275C98; color: white; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
     .btn-primary { background-color: #134989; color: white; }
-    .btn-primary:hover { background-color: #0e3768; }
     .btn-success { background-color: #275C98; color: white; }
-    .btn-success:hover { background-color: #1e4776; }
     .btn-danger { background-color: #d9534f; color: white; }
-    .btn-danger:hover { background-color: #c9302c; }
     .btn-secondary { background-color: #6c757d; color: white; }
 
-    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
-    th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; }
-    th { background-color: #275C98; color: white; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid #eee; text-align: left; font-size: 13px; }
+    th { background-color: #275C98; color: white; text-transform: uppercase; font-size: 11px; }
     tr:hover { background-color: #f9fbfd; }
 
-    img.thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
-    
+    img.thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
+    a.media-link { font-size: 11px; color: #134989; font-weight: bold; text-decoration: none; word-break: break-all; }
+
     /* Modal / Formulario */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-    .modal { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    .modal h2 { margin-top: 0; color: #134989; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #555; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    .modal { background: white; padding: 25px; border-radius: 10px; width: 95%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 12px; color: #555; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
     .form-row { display: flex; gap: 10px; }
     .form-row .form-group { flex: 1; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
   </style>
 
-  <!-- SDK oficial de Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Librería SheetJS para exportar a Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
-  <h1>Panel de Administración de Comercios</h1>
+  <h1>Administrador de Comercios, Banners y Productos</h1>
 
   <div class="toolbar">
-    <button class="btn-primary" onclick="abrirModalCrear()">➕ Nuevo Comercio</button>
-    <button class="btn-success" onclick="exportarExcel()">📊 Descargar Excel</button>
+    <button class="btn-success" onclick="exportarExcelCompleto()">📊 Descargar Excel Completo (3 Hojas)</button>
   </div>
 
-  <!-- Contenedor de la Tabla -->
-  <div id="tabla-container">Cargando comercios...</div>
+  <!-- Pestañas -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="cambiarTab('comercios')">🏪 Comercios</button>
+    <button class="tab-btn" onclick="cambiarTab('productos')">📦 Productos</button>
+    <button class="tab-btn" onclick="cambiarTab('banners')">🖼️ Banners</button>
+  </div>
 
-  <!-- Modal Formulario (Crear / Editar) -->
-  <div class="modal-overlay" id="modalForm">
+  <!-- TAB COMERCIOS -->
+  <div id="tab-comercios" class="tab-content active">
+    <div class="toolbar">
+      <button class="btn-primary" onclick="abrirModalComercio()">➕ Nuevo Comercio</button>
+    </div>
+    <div id="tabla-comercios">Cargando comercios...</div>
+  </div>
+
+  <!-- TAB PRODUCTOS -->
+  <div id="tab-productos" class="tab-content">
+    <div class="toolbar">
+      <button class="btn-primary" onclick="abrirModalProducto()">➕ Nuevo Producto</button>
+    </div>
+    <div id="tabla-productos">Cargando productos...</div>
+  </div>
+
+  <!-- TAB BANNERS -->
+  <div id="tab-banners" class="tab-content">
+    <div class="toolbar">
+      <button class="btn-primary" onclick="abrirModalBanner()">➕ Nuevo Banner</button>
+    </div>
+    <div id="tabla-banners">Cargando banners...</div>
+  </div>
+
+  <!-- MODAL COMERCIO -->
+  <div class="modal-overlay" id="modalComercio">
     <div class="modal">
-      <h2 id="modalTitle">Comercio</h2>
+      <h2 id="modalComercioTitle">Comercio</h2>
       <form id="formComercio" onsubmit="guardarComercio(event)">
         <input type="hidden" id="shop_id">
-
         <div class="form-row">
-          <div class="form-group">
-            <label>Nombre del Comercio *</label>
-            <input type="text" id="name" required>
-          </div>
-          <div class="form-group">
-            <label>Categoría</label>
-            <input type="text" id="category">
-          </div>
+          <div class="form-group"><label>ID del Negocio (business_id) *</label><input type="text" id="shop_business_id" required></div>
+          <div class="form-group"><label>Nombre del Comercio *</label><input type="text" id="shop_name" required></div>
         </div>
-
-        <div class="form-group">
-          <label>Descripción</label>
-          <textarea id="description" rows="3"></textarea>
-        </div>
-
         <div class="form-row">
-          <div class="form-group">
-            <label>Dirección</label>
-            <input type="text" id="address">
-          </div>
-          <div class="form-group">
-            <label>WhatsApp</label>
-            <input type="text" id="whatsapp">
-          </div>
+          <div class="form-group"><label>Categoría</label><input type="text" id="shop_category"></div>
+          <div class="form-group"><label>WhatsApp</label><input type="text" id="shop_whatsapp"></div>
         </div>
-
+        <div class="form-group"><label>Descripción</label><textarea id="shop_description" rows="2"></textarea></div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Subir Logo (Bucket: logos)</label>
-            <input type="file" id="logo_file" accept="image/*">
-          </div>
-          <div class="form-group">
-            <label>Subir Video (Bucket: videos)</label>
-            <input type="file" id="video_file" accept="video/*">
-          </div>
+          <div class="form-group"><label>Dirección</label><input type="text" id="shop_address"></div>
+          <div class="form-group"><label>Horario</label><input type="text" id="shop_schedule"></div>
         </div>
-
         <div class="form-row">
-          <div class="form-group">
-            <label>Instagram Link</label>
-            <input type="text" id="instagram_link">
-          </div>
-          <div class="form-group">
-            <label>Facebook Link</label>
-            <input type="text" id="facebook_link">
-          </div>
+          <div class="form-group"><label>Subir Logo (Bucket: logos)</label><input type="file" id="file_logo" accept="image/*"></div>
+          <div class="form-group"><label>Subir Portada Imagen (Bucket: logos)</label><input type="file" id="file_cover_image" accept="image/*"></div>
         </div>
-
+        <div class="form-row">
+          <div class="form-group"><label>Subir Video (Bucket: videos)</label><input type="file" id="file_video" accept="video/*"></div>
+          <div class="form-group"><label>URL de Video Externo / YouTube</label><input type="text" id="shop_video_url"></div>
+        </div>
         <div class="modal-actions">
-          <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
-          <button type="submit" class="btn-primary" id="btnGuardar">Guardar</button>
+          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Comercio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PRODUCTO -->
+  <div class="modal-overlay" id="modalProducto">
+    <div class="modal">
+      <h2 id="modalProductoTitle">Producto</h2>
+      <form id="formProducto" onsubmit="guardarProducto(event)">
+        <input type="hidden" id="product_id">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Comercio Asociado (business_id) *</label>
+            <select id="prod_business_id" required></select>
+          </div>
+          <div class="form-group"><label>Nombre del Producto *</label><input type="text" id="prod_name" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod_price"></div>
+          <div class="form-group"><label>Categoría</label><input type="text" id="prod_category"></div>
+        </div>
+        <div class="form-group"><label>Descripción</label><textarea id="prod_description" rows="2"></textarea></div>
+        <div class="form-group"><label>Subir Imagen del Producto (Bucket: logos)</label><input type="file" id="prod_file" accept="image/*"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL BANNER -->
+  <div class="modal-overlay" id="modalBanner">
+    <div class="modal">
+      <h2 id="modalBannerTitle">Banner</h2>
+      <form id="formBanner" onsubmit="guardarBanner(event)">
+        <input type="hidden" id="banner_id">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Comercio Asociado (business_id) *</label>
+            <select id="banner_business_id" required></select>
+          </div>
+          <div class="form-group"><label>Título del Banner</label><input type="text" id="banner_title"></div>
+        </div>
+        <div class="form-group"><label>Subir Imagen del Banner (Bucket: logos)</label><input type="file" id="banner_file" accept="image/*"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Banner</button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    // Credenciales de Supabase
     const SUPABASE_URL = 'https://jpukgeomsmwyxtqnpcsd.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWtnZW9tc213eXh0cW5wY3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDA3MzQsImV4cCI6MjEwNDU3NjczNH0.aALmQGfEkU4YCJM_9yUGJoUYfFVSLaZe0tnOlznKm54';
-
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let comerciosLocales = [];
 
-    // Cargar comercios al iniciar
-    document.addEventListener('DOMContentLoaded', cargarComercios);
+    let listShops = [], listProducts = [], listBanners = [];
 
-    async function cargarComercios() {
-      const { data, error } = await supabaseClient
-        .from('shops')
-        .select('*')
-        .order('id', { ascending: false });
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarTodo();
+    });
 
-      if (error) {
-        alert('Error cargando comercios: ' + error.message);
-        return;
-      }
-
-      comerciosLocales = data || [];
-      renderizarTabla(comerciosLocales);
+    async function cargarTodo() {
+      await Promise.all([cargarComercios(), cargarProductos(), cargarBanners()]);
+      actualizarSelectsNegocios();
     }
 
-    function renderizarTabla(datos) {
-      if (datos.length === 0) {
-        document.getElementById('tabla-container').innerHTML = '<p>No hay comercios registrados.</p>';
-        return;
-      }
-
-      let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Logo</th>
-              <th>Nombre</th>
-              <th>Categoría</th>
-              <th>WhatsApp</th>
-              <th>Dirección</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      datos.forEach(c => {
-        const logoImg = c.logo ? `<img src="${c.logo}" class="thumb" alt="logo">` : '—';
-        html += `
-          <tr>
-            <td>${c.id}</td>
-            <td>${logoImg}</td>
-            <td><strong>${c.name || ''}</strong></td>
-            <td>${c.category || ''}</td>
-            <td>${c.whatsapp || ''}</td>
-            <td>${c.address || ''}</td>
-            <td>
-              <button class="btn-primary" style="padding: 5px 10px;" onclick="abrirModalEditar(${c.id})">✏️ Editar</button>
-              <button class="btn-danger" style="padding: 5px 10px;" onclick="eliminarComercio(${c.id})">🗑️ Eliminar</button>
-            </td>
-          </tr>
-        `;
-      });
-
-      html += `</tbody></table>`;
-      document.getElementById('tabla-container').innerHTML = html;
-    }
-
-    // Modal Handlers
-    function abrirModalCrear() {
-      document.getElementById('modalTitle').innerText = 'Agregar Nuevo Comercio';
-      document.getElementById('formComercio').reset();
-      document.getElementById('shop_id').value = '';
-      document.getElementById('modalForm').style.display = 'flex';
-    }
-
-    function abrirModalEditar(id) {
-      const c = comerciosLocales.find(item => item.id === id);
-      if (!c) return;
-
-      document.getElementById('modalTitle').innerText = 'Editar Comercio #' + c.id;
-      document.getElementById('shop_id').value = c.id;
-      document.getElementById('name').value = c.name || '';
-      document.getElementById('category').value = c.category || '';
-      document.getElementById('description').value = c.description || '';
-      document.getElementById('address').value = c.address || '';
-      document.getElementById('whatsapp').value = c.whatsapp || '';
-      document.getElementById('instagram_link').value = c.instagram_link || '';
-      document.getElementById('facebook_link').value = c.facebook_link || '';
+    function cambiarTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
-      document.getElementById('modalForm').style.display = 'flex';
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabName).classList.add('active');
     }
 
-    function cerrarModal() {
-      document.getElementById('modalForm').style.display = 'none';
+    // --- COMERCIOS ---
+    async function cargarComercios() {
+      const { data, error } = await supabaseClient.from('shops').select('*').order('id', { ascending: false });
+      if (error) return console.error(error);
+      listShops = data || [];
+      
+      let html = `<table><thead><tr><th>ID / BusinessID</th><th>Logo</th><th>Nombre</th><th>Categoría</th><th>Portada</th><th>Video</th><th>Acciones</th></tr></thead><tbody>`;
+      listShops.forEach(c => {
+        const logo = c.logo ? `<img src="${c.logo}" class="thumb">` : '—';
+        const cover = c.cover_image ? `<img src="${c.cover_image}" class="thumb">` : '—';
+        const video = c.video || c.video_url || c.cover_video ? `<a href="${c.video || c.video_url || c.cover_video}" target="_blank" class="media-link">▶ Ver Video</a>` : '—';
+        
+        html += `<tr>
+          <td>#${c.id} <br><small style="color:#666;">${c.business_id || 'Sin ID'}</small></td>
+          <td>${logo}</td>
+          <td><strong>${c.name || ''}</strong></td>
+          <td>${c.category || ''}</td>
+          <td>${cover}</td>
+          <td>${video}</td>
+          <td>
+            <button class="btn-primary" onclick="abrirModalComercio(${c.id})">✏️</button>
+            <button class="btn-danger" onclick="eliminarRegistro('shops', ${c.id}, cargarComercios)">🗑️</button>
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('tabla-comercios').innerHTML = html;
     }
 
-    // Subir archivo a Supabase Storage
-    async function subirArchivo(bucketName, fileInput) {
+    // --- PRODUCTOS ---
+    async function cargarProductos() {
+      const { data, error } = await supabaseClient.from('shop_products').select('*').order('created_at', { ascending: false });
+      if (error) return console.error(error);
+      listProducts = data || [];
+
+      let html = `<table><thead><tr><th>Imagen</th><th>Producto</th><th>Business ID</th><th>Precio</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>`;
+      listProducts.forEach(p => {
+        const img = p.image_url ? `<img src="${p.image_url}" class="thumb">` : '—';
+        html += `<tr>
+          <td>${img}</td>
+          <td><strong>${p.name || ''}</strong></td>
+          <td>${p.business_id || ''}</td>
+          <td>$${p.price || 0}</td>
+          <td>${p.category || ''}</td>
+          <td>
+            <button class="btn-danger" onclick="eliminarRegistro('shop_products', '${p.id}', cargarProductos)">🗑️</button>
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('tabla-productos').innerHTML = html;
+    }
+
+    // --- BANNERS ---
+    async function cargarBanners() {
+      const { data, error } = await supabaseClient.from('shop_banners').select('*').order('created_at', { ascending: false });
+      if (error) return console.error(error);
+      listBanners = data || [];
+
+      let html = `<table><thead><tr><th>Imagen</th><th>Título</th><th>Business ID</th><th>Acciones</th></tr></thead><tbody>`;
+      listBanners.forEach(b => {
+        const img = b.image_url ? `<img src="${b.image_url}" class="thumb">` : '—';
+        html += `<tr>
+          <td>${img}</td>
+          <td><strong>${b.title || 'Sin Título'}</strong></td>
+          <td>${b.business_id || ''}</td>
+          <td>
+            <button class="btn-danger" onclick="eliminarRegistro('shop_banners', '${b.id}', cargarBanners)">🗑️</button>
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('tabla-banners').innerHTML = html;
+    }
+
+    // --- SUBIR ARCHIVOS ---
+    async function subirArchivo(bucket, fileInput) {
       const file = fileInput.files[0];
       if (!file) return null;
-
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-      const { data, error } = await supabaseClient.storage.from(bucketName).upload(fileName, file);
-      if (error) {
-        throw new Error(`Error en bucket ${bucketName}: ` + error.message);
-      }
-
-      const { data: publicUrlData } = supabaseClient.storage.from(bucketName).getPublicUrl(fileName);
-      return publicUrlData.publicUrl;
+      const { error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
+      if (error) throw error;
+      return supabaseClient.storage.from(bucket).getPublicUrl(fileName).data.publicUrl;
     }
 
-    // Guardar (Crear / Actualizar)
+    // --- GUARDAR COMERCIO ---
     async function guardarComercio(e) {
       e.preventDefault();
-      const btn = document.getElementById('btnGuardar');
-      btn.innerText = 'Guardando...';
-      btn.disabled = true;
-
       try {
         const id = document.getElementById('shop_id').value;
-        const logoFile = document.getElementById('logo_file');
-        const videoFile = document.getElementById('video_file');
-
-        let logoUrl = null;
-        let videoUrl = null;
-
-        if (logoFile.files.length > 0) {
-          logoUrl = await subirArchivo('logos', logoFile);
-        }
-
-        if (videoFile.files.length > 0) {
-          videoUrl = await subirArchivo('videos', videoFile);
-        }
+        const logoUrl = await subirArchivo('logos', document.getElementById('file_logo'));
+        const coverUrl = await subirArchivo('logos', document.getElementById('file_cover_image'));
+        const videoUrl = await subirArchivo('videos', document.getElementById('file_video'));
 
         const payload = {
-          name: document.getElementById('name').value,
-          category: document.getElementById('category').value,
-          description: document.getElementById('description').value,
-          address: document.getElementById('address').value,
-          whatsapp: document.getElementById('whatsapp').value,
-          instagram_link: document.getElementById('instagram_link').value,
-          facebook_link: document.getElementById('facebook_link').value
+          business_id: document.getElementById('shop_business_id').value,
+          name: document.getElementById('shop_name').value,
+          category: document.getElementById('shop_category').value,
+          description: document.getElementById('shop_description').value,
+          address: document.getElementById('shop_address').value,
+          whatsapp: document.getElementById('shop_whatsapp').value,
+          schedule: document.getElementById('shop_schedule').value,
+          video_url: document.getElementById('shop_video_url').value
         };
 
         if (logoUrl) payload.logo = logoUrl;
+        if (coverUrl) payload.cover_image = coverUrl;
         if (videoUrl) payload.video = videoUrl;
 
-        let response;
         if (id) {
-          response = await supabaseClient.from('shops').update(payload).eq('id', id);
+          await supabaseClient.from('shops').update(payload).eq('id', id);
         } else {
-          response = await supabaseClient.from('shops').insert([payload]);
+          await supabaseClient.from('shops').insert([payload]);
         }
 
-        if (response.error) throw response.error;
-
-        cerrarModal();
-        await cargarComercios();
-        alert('Comercio guardado exitosamente.');
-      } catch (err) {
-        alert('Ocurrió un error: ' + err.message);
-      } finally {
-        btn.innerText = 'Guardar';
-        btn.disabled = false;
-      }
+        cerrarModales();
+        await cargarTodo();
+        alert('Comercio guardado correctamente');
+      } catch (err) { alert('Error: ' + err.message); }
     }
 
-    // Eliminar Comercio
-    async function eliminarComercio(id) {
-      if (!confirm(`¿Estás seguro de que deseas eliminar el comercio #${id}?`)) return;
+    // --- GUARDAR PRODUCTO ---
+    async function guardarProducto(e) {
+      e.preventDefault();
+      try {
+        const imgUrl = await subirArchivo('logos', document.getElementById('prod_file'));
+        const payload = {
+          business_id: document.getElementById('prod_business_id').value,
+          name: document.getElementById('prod_name').value,
+          price: document.getElementById('prod_price').value,
+          category: document.getElementById('prod_category').value,
+          description: document.getElementById('prod_description').value
+        };
+        if (imgUrl) payload.image_url = imgUrl;
 
-      const { error } = await supabaseClient.from('shops').delete().eq('id', id);
-      if (error) {
-        alert('Error al eliminar: ' + error.message);
-      } else {
-        await cargarComercios();
-        alert('Comercio eliminado correctamente.');
-      }
+        await supabaseClient.from('shop_products').insert([payload]);
+        cerrarModales();
+        await cargarProductos();
+        alert('Producto agregado');
+      } catch (err) { alert('Error: ' + err.message); }
     }
 
-    // Exportar a Excel con SheetJS
-    function exportarExcel() {
-      if (comerciosLocales.length === 0) {
-        alert('No hay datos para exportar.');
-        return;
+    // --- GUARDAR BANNER ---
+    async function guardarBanner(e) {
+      e.preventDefault();
+      try {
+        const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
+        const payload = {
+          business_id: document.getElementById('banner_business_id').value,
+          title: document.getElementById('banner_title').value
+        };
+        if (imgUrl) payload.image_url = imgUrl;
+
+        await supabaseClient.from('shop_banners').insert([payload]);
+        cerrarModales();
+        await cargarBanners();
+        alert('Banner agregado');
+      } catch (err) { alert('Error: ' + err.message); }
+    }
+
+    // --- UTILS ---
+    function actualizarSelectsNegocios() {
+      const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
+      document.getElementById('prod_business_id').innerHTML = options;
+      document.getElementById('banner_business_id').innerHTML = options;
+    }
+
+    function abrirModalComercio(id = null) {
+      document.getElementById('formComercio').reset();
+      document.getElementById('shop_id').value = '';
+      if (id) {
+        const c = listShops.find(i => i.id === id);
+        document.getElementById('shop_id').value = c.id;
+        document.getElementById('shop_business_id').value = c.business_id || '';
+        document.getElementById('shop_name').value = c.name || '';
+        document.getElementById('shop_category').value = c.category || '';
+        document.getElementById('shop_description').value = c.description || '';
+        document.getElementById('shop_address').value = c.address || '';
+        document.getElementById('shop_whatsapp').value = c.whatsapp || '';
+        document.getElementById('shop_schedule').value = c.schedule || '';
+        document.getElementById('shop_video_url').value = c.video_url || '';
       }
-      const worksheet = XLSX.utils.json_to_sheet(comerciosLocales);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Comercios');
-      XLSX.writeFile(workbook, 'Comercios_Supabase.xlsx');
+      document.getElementById('modalComercio').style.display = 'flex';
+    }
+
+    function abrirModalProducto() { document.getElementById('modalProducto').style.display = 'flex'; }
+    function abrirModalBanner() { document.getElementById('modalBanner').style.display = 'flex'; }
+    function cerrarModales() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+
+    async function eliminarRegistro(tabla, id, callback) {
+      if (!confirm('¿Estás seguro de eliminar este registro?')) return;
+      const { error } = await supabaseClient.from(tabla).delete().eq('id', id);
+      if (error) alert(error.message);
+      else callback();
+    }
+
+    // EXPORTAR EXCEL MULTI-HOJA
+    function exportarExcelCompleto() {
+      const wb = XLSX.utils.book_new();
+      
+      const wsShops = XLSX.utils.json_to_sheet(listShops);
+      XLSX.utils.book_append_sheet(wb, wsShops, "Comercios");
+
+      const wsProducts = XLSX.utils.json_to_sheet(listProducts);
+      XLSX.utils.book_append_sheet(wb, wsProducts, "Productos");
+
+      const wsBanners = XLSX.utils.json_to_sheet(listBanners);
+      XLSX.utils.book_append_sheet(wb, wsBanners, "Banners");
+
+      XLSX.writeFile(wb, "Reporte_Completo_Supabase.xlsx");
     }
   </script>
 </body>
