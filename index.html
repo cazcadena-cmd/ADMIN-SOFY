@@ -8,7 +8,7 @@
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f6f8; color: #333; }
-    h1 { color: #134989; margin-bottom: 10px; }
+    h1 { color: #134989; margin-bottom: 20px; }
     
     /* Pestañas */
     .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #275C98; }
@@ -21,7 +21,6 @@
     .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
     button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
     .btn-primary { background-color: #134989; color: white; }
-    .btn-success { background-color: #275C98; color: white; }
     .btn-danger { background-color: #d9534f; color: white; }
     .btn-secondary { background-color: #6c757d; color: white; }
 
@@ -45,15 +44,10 @@
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
   <h1>Administrador de Comercios, Banners y Productos</h1>
-
-  <div class="toolbar">
-    <button class="btn-success" onclick="exportarExcelCompleto()">📊 Descargar Excel Completo (3 Hojas)</button>
-  </div>
 
   <!-- Pestañas -->
   <div class="tabs">
@@ -389,46 +383,6 @@
       const { error } = await supabaseClient.from(tabla).delete().eq('id', id);
       if (error) alert(error.message);
       else callback();
-    }
-
-    // EXPORTAR EXCEL MULTI-HOJA CON CONTROL DE ERRORES
-    function exportarExcelCompleto() {
-      try {
-        if (typeof XLSX === 'undefined') {
-          alert("Error: La librería SheetJS (XLSX) no se cargó. Verifica que no tengas bloqueadores de anuncios o problemas de conexión.");
-          return;
-        }
-
-        const totalRegistros = listShops.length + listProducts.length + listBanners.length;
-        if (totalRegistros === 0) {
-          alert("No hay ningún dato cargado en las tablas para exportar.");
-          return;
-        }
-
-        const wb = XLSX.utils.book_new();
-
-        const wsShops = listShops.length > 0 
-          ? XLSX.utils.json_to_sheet(listShops) 
-          : XLSX.utils.aoa_to_sheet([["Sin registros en Comercios"]]);
-        XLSX.utils.book_append_sheet(wb, wsShops, "Comercios");
-
-        const wsProducts = listProducts.length > 0 
-          ? XLSX.utils.json_to_sheet(listProducts) 
-          : XLSX.utils.aoa_to_sheet([["Sin registros en Productos"]]);
-        XLSX.utils.book_append_sheet(wb, wsProducts, "Productos");
-
-        const wsBanners = listBanners.length > 0 
-          ? XLSX.utils.json_to_sheet(listBanners) 
-          : XLSX.utils.aoa_to_sheet([["Sin registros en Banners"]]);
-        XLSX.utils.book_append_sheet(wb, wsBanners, "Banners");
-
-        XLSX.writeFile(wb, "Reporte_Completo_Supabase.xlsx");
-        
-        alert("¡Archivo 'Reporte_Completo_Supabase.xlsx' generado e iniciado en descargas!");
-      } catch (err) {
-        alert("Ocurrió un error al generar el archivo Excel: " + err.message);
-        console.error("Error al exportar Excel:", err);
-      }
     }
   </script>
 </body>
