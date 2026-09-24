@@ -1,333 +1,1226 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Tienda</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase Client JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
 
-  <div class="max-w-6xl mx-auto space-y-8">
+  <title>Administrador General - Supabase</title>
+
+  
+
+  <style>
+
+    :root {
+
+      --primary: #134989;
+
+      --secondary: #275C98;
+
+      --danger: #d9534f;
+
+      --success: #28a745;
+
+      --bg: #f4f6f8;
+
+      --text: #333;
+
+    }
+
+
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    body { margin: 20px; background-color: var(--bg); color: var(--text); }
+
+    h1 { color: var(--primary); margin-bottom: 20px; font-size: 24px; }
+
     
-    <!-- Encabezado -->
-    <header class="border-b border-slate-700 pb-4 flex justify-between items-center">
-      <div>
-        <h1 class="text-3xl font-bold text-sky-400">Panel de Control de Tienda</h1>
-        <p class="text-slate-400 text-sm">Gestión de datos, productos y multimedia con Supabase</p>
-      </div>
-      <div id="status-badge" class="px-3 py-1 text-xs rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-        Configura tus credenciales
-      </div>
-    </header>
 
-    <!-- Configuración de credenciales -->
-    <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-      <h2 class="text-xl font-semibold mb-4 text-slate-200">1. Credenciales de Supabase</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-slate-400 mb-1">SUPABASE_URL</label>
-          <input type="text" id="cfg_url" placeholder="https://tu-proyecto.supabase.co" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm focus:outline-none focus:border-sky-500">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-400 mb-1">SUPABASE_ANON_KEY</label>
-          <input type="password" id="cfg_key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm focus:outline-none focus:border-sky-500">
-        </div>
-      </div>
-      <button onclick="inicializarSupabase()" class="mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-medium rounded-lg text-sm transition">
-        Conectar Cliente
-      </button>
-    </section>
+    /* Pestañas */
 
-    <!-- Gestión de Tienda -->
-    <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-      <h2 class="text-xl font-semibold mb-4 text-slate-200">2. Información de la Tienda</h2>
-      <form id="formTienda" onsubmit="guardarTienda(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">ID del Negocio (business_id) *</label>
-          <input type="text" id="shop_business_id" required class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Nombre Comercial *</label>
-          <input type="text" id="shop_name" required class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Categoría</label>
-          <input type="text" id="shop_category" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">WhatsApp de contacto</label>
-          <input type="text" id="shop_whatsapp" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Logo (Bucket: logos)</label>
-          <input type="file" id="shop_logo_file" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-400">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Video promocional (Bucket: videos)</label>
-          <input type="file" id="shop_video_file" accept="video/*" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-400">
-        </div>
-        <div class="md:col-span-2">
-          <label class="block text-sm text-slate-400 mb-1">Descripción</label>
-          <textarea id="shop_description" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm"></textarea>
-        </div>
-        <div class="md:col-span-2">
-          <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg text-sm transition">
-            Guardar / Actualizar Tienda
-          </button>
-        </div>
-      </form>
-    </section>
+    .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--secondary); }
 
-    <!-- Gestión de Productos -->
-    <section class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-      <h2 class="text-xl font-semibold mb-4 text-slate-200">3. Registro de Productos</h2>
-      <form id="formProducto" onsubmit="guardarProducto(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">ID Negocio Asociado</label>
-          <input type="text" id="prod_business_id" placeholder="Opcional" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Nombre del Producto *</label>
-          <input type="text" id="prod_name" required class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Precio</label>
-          <input type="number" step="0.01" id="prod_price" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Categoría del Producto</label>
-          <input type="text" id="prod_category" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm text-slate-400 mb-1">Imagen del Producto (Bucket: logos)</label>
-          <input type="file" id="prod_image_file" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-400">
-        </div>
-        <div class="md:col-span-3">
-          <label class="block text-sm text-slate-400 mb-1">Descripción corta</label>
-          <input type="text" id="prod_description" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm">
-        </div>
-        <div class="md:col-span-3">
-          <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg text-sm transition">
-            Guardar Producto
-          </button>
-        </div>
-      </form>
+    .tab-btn { padding: 12px 24px; background: #e0e0e0; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; color: #555; transition: 0.3s; }
 
-      <!-- Tabla de productos cargados -->
-      <div class="overflow-x-auto border border-slate-700 rounded-lg">
-        <table class="w-full text-left text-sm text-slate-300">
-          <thead class="bg-slate-900 text-slate-400 uppercase text-xs">
-            <tr>
-              <th class="p-3">Imagen</th>
-              <th class="p-3">Nombre</th>
-              <th class="p-3">Categoría</th>
-              <th class="p-3">Precio</th>
-              <th class="p-3">Business ID</th>
-              <th class="p-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tabla_productos" class="divide-y divide-slate-700">
-            <tr>
-              <td colspan="6" class="p-4 text-center text-slate-500">Conecta Supabase para cargar productos.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    .tab-btn:hover { background: #d0d0d0; }
+
+    .tab-btn.active { background: var(--secondary); color: white; }
+
+
+
+    .tab-content { display: none; animation: fadeIn 0.4s; }
+
+    .tab-content.active { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+
+
+    /* Botones */
+
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+
+    button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; }
+
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-primary { background-color: var(--primary); color: white; }
+
+    .btn-primary:hover:not(:disabled) { background-color: #0f386b; }
+
+    .btn-danger { background-color: var(--danger); color: white; }
+
+    .btn-danger:hover { background-color: #c9302c; }
+
+    .btn-secondary { background-color: #6c757d; color: white; }
+
+    .btn-secondary:hover { background-color: #5a6268; }
+
+    
+
+    /* Tablas */
+
+    .table-container { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 8px; overflow-x: auto; margin-bottom: 20px; }
+
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+
+    th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: middle; }
+
+    th { background-color: var(--secondary); color: white; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+
+    tr:hover { background-color: #f9fbfd; }
+
+    
+
+    img.thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+
+    a.media-link { font-size: 12px; color: var(--primary); font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+
+    a.media-link:hover { text-decoration: underline; }
+
+
+
+    /* Modal / Formulario */
+
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
+
+    .modal { background: white; padding: 30px; border-radius: 12px; width: 95%; max-width: 750px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+    .modal h2 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+
+    
+
+    .form-group { margin-bottom: 15px; }
+
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #444; }
+
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(19, 73, 137, 0.1); }
+
+    .form-row { display: flex; gap: 15px; }
+
+    .form-row .form-group { flex: 1; }
+
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
+
+
+
+    /* Sistema de Notificaciones (Toast) */
+
+    #toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 14px 20px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+    #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.4s 2.6s; }
+
+    @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+
+    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+  </style>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+
+
+
+  <h1>Administrador de Comercios, Hero Slider / Videos y Productos</h1>
+
+
+
+  <!-- Pestañas -->
+
+  <div class="tabs">
+
+    <button class="tab-btn active" onclick="cambiarTab('comercios')">🏪 Comercios</button>
+
+    <button class="tab-btn" onclick="cambiarTab('productos')">📦 Productos</button>
+
+    <button class="tab-btn" onclick="cambiarTab('banners')">🎬 Hero Slider / Videos</button>
 
   </div>
 
-  <!-- JavaScript Lógico Completo con Parches Aplicados -->
+
+
+  <!-- TAB COMERCIOS -->
+
+  <div id="tab-comercios" class="tab-content active">
+
+    <div class="toolbar">
+
+      <button class="btn-primary" onclick="abrirModalComercio()">➕ Nuevo Comercio</button>
+
+    </div>
+
+    <div class="table-container" id="tabla-comercios">
+
+      <p style="padding: 20px;">Cargando comercios...</p>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- TAB PRODUCTOS -->
+
+  <div id="tab-productos" class="tab-content">
+
+    <div class="toolbar">
+
+      <button class="btn-primary" onclick="abrirModalProducto()">➕ Nuevo Producto</button>
+
+    </div>
+
+    <div class="table-container" id="tabla-productos">
+
+      <p style="padding: 20px;">Cargando productos...</p>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- TAB BANNERS / HERO SLIDER -->
+
+  <div id="tab-banners" class="tab-content">
+
+    <div class="toolbar">
+
+      <button class="btn-primary" onclick="abrirModalBanner()">➕ Nuevo Video / Banner para Slider</button>
+
+    </div>
+
+    <div class="table-container" id="tabla-banners">
+
+      <p style="padding: 20px;">Cargando elementos del slider...</p>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- MODAL COMERCIO -->
+
+  <div class="modal-overlay" id="modalComercio">
+
+    <div class="modal">
+
+      <h2 id="modalComercioTitle">Gestión de Comercio</h2>
+
+      <form id="formComercio" onsubmit="guardarComercio(event)">
+
+        <input type="hidden" id="shop_id">
+
+        <div class="form-row">
+
+          <div class="form-group"><label>ID del Negocio (business_id) *</label><input type="text" id="shop_business_id" required></div>
+
+          <div class="form-group"><label>Nombre del Comercio *</label><input type="text" id="shop_name" required></div>
+
+        </div>
+
+        <div class="form-row">
+
+          <div class="form-group"><label>Categoría</label><input type="text" id="shop_category"></div>
+
+          <div class="form-group"><label>WhatsApp</label><input type="text" id="shop_whatsapp"></div>
+
+        </div>
+
+        <div class="form-group"><label>Descripción</label><textarea id="shop_description" rows="3"></textarea></div>
+
+        <div class="form-row">
+
+          <div class="form-group"><label>Dirección</label><input type="text" id="shop_address"></div>
+
+          <div class="form-group"><label>Horario</label><input type="text" id="shop_schedule"></div>
+
+        </div>
+
+        <div class="form-row">
+
+          <div class="form-group"><label>Subir Logo (Bucket: logos)</label><input type="file" id="file_logo" accept="image/*"></div>
+
+          <div class="form-group"><label>Subir Portada (Bucket: logos)</label><input type="file" id="file_cover_image" accept="image/*"></div>
+
+        </div>
+
+        <div class="form-row">
+
+          <div class="form-group"><label>Subir Video (Bucket: videos)</label><input type="file" id="file_video" accept="video/*"></div>
+
+          <div class="form-group"><label>URL de Video Externo / YouTube</label><input type="url" id="shop_video_url"></div>
+
+        </div>
+
+        <div class="modal-actions">
+
+          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+
+          <button type="submit" class="btn-primary" id="btnGuardarComercio">Guardar Comercio</button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- MODAL PRODUCTO -->
+
+  <div class="modal-overlay" id="modalProducto">
+
+    <div class="modal">
+
+      <h2 id="modalProductoTitle">Gestión de Producto</h2>
+
+      <form id="formProducto" onsubmit="guardarProducto(event)">
+
+        <input type="hidden" id="product_id">
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>Comercio Asociado (business_id) *</label>
+
+            <select id="prod_business_id" required></select>
+
+          </div>
+
+          <div class="form-group"><label>Nombre del Producto *</label><input type="text" id="prod_name" required></div>
+
+        </div>
+
+        <div class="form-row">
+
+          <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod_price"></div>
+
+          <div class="form-group"><label>Categoría</label><input type="text" id="prod_category"></div>
+
+        </div>
+
+        <div class="form-group"><label>Descripción</label><textarea id="prod_description" rows="3"></textarea></div>
+
+        <div class="form-group"><label>Subir Imagen del Producto (Bucket: logos)</label><input type="file" id="prod_file" accept="image/*"></div>
+
+        <div class="modal-actions">
+
+          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+
+          <button type="submit" class="btn-primary" id="btnGuardarProducto">Guardar Producto</button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- MODAL BANNER / HERO SLIDER (SOPORTA VIDEOS MP4 E IMÁGENES) -->
+
+  <div class="modal-overlay" id="modalBanner">
+
+    <div class="modal">
+
+      <h2 id="modalBannerTitle">Gestión de Video / Banner Hero Slider</h2>
+
+      <form id="formBanner" onsubmit="guardarBanner(event)">
+
+        <input type="hidden" id="banner_id">
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>Comercio Asociado (Opcional)</label>
+
+            <select id="banner_business_id"></select>
+
+          </div>
+
+          <div class="form-group"><label>Título o Descripción del Video/Banner</label><input type="text" id="banner_title" placeholder="Ej: Video Promocional 1"></div>
+
+        </div>
+
+
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>Subir Archivo Video MP4 (Bucket: videos)</label>
+
+            <input type="file" id="banner_video_file" accept="video/*">
+
+          </div>
+
+          <div class="form-group">
+
+            <label>O Pegar URL Directa de Video MP4 (ej: Imgur)</label>
+
+            <input type="url" id="banner_video_url" placeholder="https://i.imgur.com/pwQfKed.mp4">
+
+          </div>
+
+        </div>
+
+
+
+        <div class="form-group">
+
+          <label>O Subir Imagen Estática (Si no es video)</label>
+
+          <input type="file" id="banner_file" accept="image/*">
+
+        </div>
+
+
+
+        <div class="modal-actions">
+
+          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+
+          <button type="submit" class="btn-primary" id="btnGuardarBanner">Guardar en Slider</button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- Contenedor Toast -->
+
+  <div id="toast">Notificación</div>
+
+
+
   <script>
-    let supabaseClient = null;
 
-    // 1. Inicializar cliente Supabase
-    function inicializarSupabase() {
-      const url = document.getElementById('cfg_url').value.trim();
-      const key = document.getElementById('cfg_key').value.trim();
+    const SUPABASE_URL = 'https://jpukgeomsmwyxtqnpcsd.supabase.co';
 
-      if (!url || !key) {
-        alert('Por favor ingresa URL y Key de Supabase');
-        return;
-      }
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWtnZW9tc213eXh0cW5wY3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDA3MzQsImV4cCI6MjEwNDU3NjczNH0.aALmQGfEkU4YCJM_9yUGJoUYfFVSLaZe0tnOlznKm54';
 
-      try {
-        supabaseClient = supabase.createClient(url, key);
-        const badge = document.getElementById('status-badge');
-        badge.textContent = 'Conectado a Supabase';
-        badge.className = 'px-3 py-1 text-xs rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+
+    let listShops = [], listProducts = [], listBanners = [];
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+      cargarTodo();
+
+    });
+
+
+
+    function mostrarToast(mensaje, esError = false) {
+
+      const toast = document.getElementById("toast");
+
+      toast.innerText = mensaje;
+
+      toast.style.backgroundColor = esError ? "var(--danger)" : "var(--success)";
+
+      toast.className = "show";
+
+      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+
+    }
+
+
+
+    async function cargarTodo() {
+
+      await Promise.all([cargarComercios(), cargarProductos(), cargarBanners()]);
+
+      actualizarSelectsNegocios();
+
+    }
+
+
+
+    function cambiarTab(tabName) {
+
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      
+
+      event.target.classList.add('active');
+
+      document.getElementById('tab-' + tabName).classList.add('active');
+
+    }
+
+
+
+    // --- COMERCIOS ---
+
+    async function cargarComercios() {
+
+      const { data, error } = await supabaseClient.from('shops').select('*').order('id', { ascending: false });
+
+      if (error) return mostrarToast('Error cargando comercios: ' + error.message, true);
+
+      listShops = data || [];
+
+      
+
+      let html = `<table><thead><tr><th>ID / BusinessID</th><th>Logo</th><th>Nombre</th><th>Categoría</th><th>Portada</th><th>Video</th><th>Acciones</th></tr></thead><tbody>`;
+
+      listShops.forEach(c => {
+
+        const logo = c.logo ? `<img src="${c.logo}" class="thumb">` : '—';
+
+        const cover = c.cover_image ? `<img src="${c.cover_image}" class="thumb">` : '—';
+
+        const video = c.video || c.video_url || c.cover_video ? `<a href="${c.video || c.video_url || c.cover_video}" target="_blank" class="media-link">▶ Ver Video</a>` : '—';
+
         
-        cargarProductos();
-      } catch (err) {
-        console.error('Error al inicializar Supabase:', err);
-        alert('Error al conectar cliente Supabase: ' + err.message);
-      }
+
+        html += `<tr>
+
+          <td>#${c.id} <br><small style="color:#888;">${c.business_id || 'Sin ID'}</small></td>
+
+          <td>${logo}</td>
+
+          <td><strong>${c.name || ''}</strong></td>
+
+          <td>${c.category || ''}</td>
+
+          <td>${cover}</td>
+
+          <td>${video}</td>
+
+          <td style="min-width: 110px;">
+
+            <button class="btn-primary" onclick="abrirModalComercio(${c.id})">✏️</button>
+
+            <button class="btn-danger" onclick="eliminarRegistro('shops', ${c.id}, cargarComercios)">🗑️</button>
+
+          </td>
+
+        </tr>`;
+
+      });
+
+      html += `</tbody></table>`;
+
+      document.getElementById('tabla-comercios').innerHTML = html;
+
+      actualizarSelectsNegocios();
+
     }
 
-    // 2. Función auxiliar segura para subida de archivos
-    async function subirArchivo(fileInputId, bucketName) {
-      const fileInput = document.getElementById(fileInputId);
-      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-        return null; // Ningún archivo seleccionado
-      }
 
-      const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-      const filePath = `${fileName}`;
 
-      const { data, error } = await supabaseClient.storage
-        .from(bucketName)
-        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+    // --- PRODUCTOS ---
 
-      if (error) {
-        console.error(`Error subiendo archivo al bucket ${bucketName}:`, error);
-        throw new Error(`Fallo en almacenamiento (${bucketName}): ${error.message}`);
-      }
-
-      const { data: publicUrlData } = supabaseClient.storage
-        .from(bucketName)
-        .getPublicUrl(filePath);
-
-      return publicUrlData.publicUrl;
-    }
-
-    // 3. Guardar o actualizar datos de la tienda
-    async function guardarTienda(event) {
-      event.preventDefault();
-      if (!supabaseClient) return alert('Primero inicializa las credenciales.');
-
-      try {
-        let logoUrl = await subirArchivo('shop_logo_file', 'logos');
-        let videoUrl = await subirArchivo('shop_video_file', 'videos');
-
-        const businessId = document.getElementById('shop_business_id').value.trim();
-
-        const payload = {
-          business_id: businessId,
-          name: document.getElementById('shop_name').value.trim(),
-          category: document.getElementById('shop_category').value.trim() || null,
-          whatsapp: document.getElementById('shop_whatsapp').value.trim() || null,
-          description: document.getElementById('shop_description').value.trim() || null
-        };
-
-        if (logoUrl) payload.logo = logoUrl;
-        if (videoUrl) payload.video = videoUrl;
-
-        const { data, error } = await supabaseClient
-          .from('shops')
-          .upsert(payload, { onConflict: 'business_id' });
-
-        if (error) throw error;
-
-        alert('¡Información de la tienda guardada con éxito!');
-      } catch (err) {
-        console.error('Error en guardarTienda:', err);
-        alert('Error al guardar tienda: ' + err.message);
-      }
-    }
-
-    // 4. Guardar producto con parches de tipos nulos y conversión numérica
-    async function guardarProducto(event) {
-      event.preventDefault();
-      if (!supabaseClient) return alert('Primero inicializa las credenciales.');
-
-      try {
-        let imageUrl = await subirArchivo('prod_image_file', 'logos');
-
-        const rawBusinessId = document.getElementById('prod_business_id').value.trim();
-        const rawPrice = document.getElementById('prod_price').value.trim();
-
-        // Parches de conversión para evitar errores 400 Bad Request
-        const payload = {
-          business_id: rawBusinessId !== '' ? rawBusinessId : null,
-          name: document.getElementById('prod_name').value.trim(),
-          price: rawPrice !== '' ? parseFloat(rawPrice) : null,
-          category: document.getElementById('prod_category').value.trim() || null,
-          description: document.getElementById('prod_description').value.trim() || null
-        };
-
-        if (imageUrl) payload.image_url = imageUrl;
-
-        const { error } = await supabaseClient
-          .from('shop_products')
-          .insert([payload]);
-
-        if (error) throw error;
-
-        alert('¡Producto guardado exitosamente!');
-        document.getElementById('formProducto').reset();
-        cargarProductos();
-      } catch (err) {
-        console.error('Error en guardarProducto:', err);
-        alert('Error al guardar producto: ' + err.message);
-      }
-    }
-
-    // 5. Cargar y listar productos en la tabla
     async function cargarProductos() {
-      if (!supabaseClient) return;
 
-      const tbody = document.getElementById('tabla_productos');
-      tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Cargando productos...</td></tr>';
+      const { data, error } = await supabaseClient.from('shop_products').select('*').order('created_at', { ascending: false });
 
-      try {
-        const { data, error } = await supabaseClient
-          .from('shop_products')
-          .select('*')
-          .order('created_at', { ascending: false });
+      if (error) return console.error(error);
 
-        if (error) throw error;
+      listProducts = data || [];
 
-        if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">No hay productos registrados.</td></tr>';
-          return;
+
+
+      let html = `<table><thead><tr><th>Imagen</th><th>Producto</th><th>Comercio (ID)</th><th>Precio</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>`;
+
+      listProducts.forEach(p => {
+
+        const img = p.image_url ? `<img src="${p.image_url}" class="thumb">` : '—';
+
+        html += `<tr>
+
+          <td>${img}</td>
+
+          <td><strong>${p.name || ''}</strong></td>
+
+          <td>${p.business_id || ''}</td>
+
+          <td>$${p.price || 0}</td>
+
+          <td>${p.category || ''}</td>
+
+          <td style="min-width: 110px;">
+
+            <button class="btn-primary" onclick="abrirModalProducto('${p.id}')">✏️</button>
+
+            <button class="btn-danger" onclick="eliminarRegistro('shop_products', '${p.id}', cargarProductos)">🗑️</button>
+
+          </td>
+
+        </tr>`;
+
+      });
+
+      html += `</tbody></table>`;
+
+      document.getElementById('tabla-productos').innerHTML = html;
+
+    }
+
+
+
+    // --- BANNERS / VIDEOS DEL HERO SLIDER ---
+
+    async function cargarBanners() {
+
+      const { data, error } = await supabaseClient.from('shop_banners').select('*').order('created_at', { ascending: false });
+
+      if (error) return console.error(error);
+
+      listBanners = data || [];
+
+
+
+      let html = `<table><thead><tr><th>Vista Previa / Media</th><th>Título / Ref</th><th>Tipo</th><th>Comercio (ID)</th><th>Acciones</th></tr></thead><tbody>`;
+
+      listBanners.forEach(b => {
+
+        let mediaPreview = '—';
+
+        let tipo = 'Imagen';
+
+
+
+        if (b.video_url) {
+
+          mediaPreview = `<video src="${b.video_url}" width="80" height="50" style="border-radius:6px; object-fit:cover;" autoplay muted loop></video>`;
+
+          tipo = '🎥 Video';
+
+        } else if (b.image_url) {
+
+          mediaPreview = `<img src="${b.image_url}" class="thumb">`;
+
+          tipo = '🖼️ Imagen';
+
         }
 
-        tbody.innerHTML = data.map(p => `
-          <tr class="hover:bg-slate-800/50 transition">
-            <td class="p-3">
-              ${p.image_url ? `<img src="${p.image_url}" class="w-10 h-10 object-cover rounded border border-slate-700">` : '<span class="text-xs text-slate-500">Sin foto</span>'}
-            </td>
-            <td class="p-3 font-medium text-slate-200">${p.name || '-'}</td>
-            <td class="p-3 text-slate-400">${p.category || '-'}</td>
-            <td class="p-3 text-emerald-400 font-medium">${p.price !== null ? '$' + p.price : '-'}</td>
-            <td class="p-3 text-slate-400">${p.business_id || '<span class="text-slate-600">N/A</span>'}</td>
-            <td class="p-3">
-              <button onclick="eliminarProducto('${p.id}')" class="text-rose-400 hover:text-rose-300 text-xs px-2 py-1 rounded border border-rose-500/30 hover:bg-rose-500/10">
-                Eliminar
-              </button>
-            </td>
-          </tr>
-        `).join('');
 
-      } catch (err) {
-        console.error('Error en cargarProductos:', err);
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-rose-400">Error: ${err.message}</td></tr>`;
-      }
+
+        html += `<tr>
+
+          <td>${mediaPreview}</td>
+
+          <td><strong>${b.title || 'Sin Título'}</strong></td>
+
+          <td><span style="font-size:11px; background:#e9ecef; padding:4px 8px; border-radius:10px; font-weight:bold;">${tipo}</span></td>
+
+          <td>${b.business_id || 'General / Global'}</td>
+
+          <td style="min-width: 110px;">
+
+            <button class="btn-primary" onclick="abrirModalBanner('${b.id}')">✏️</button>
+
+            <button class="btn-danger" onclick="eliminarRegistro('shop_banners', '${b.id}', cargarBanners)">🗑️</button>
+
+          </td>
+
+        </tr>`;
+
+      });
+
+      html += `</tbody></table>`;
+
+      document.getElementById('tabla-banners').innerHTML = html;
+
     }
 
-    // 6. Eliminar producto
-    async function eliminarProducto(id) {
-      if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+
+
+    // --- SUBIR ARCHIVOS ---
+
+    async function subirArchivo(bucket, fileInput) {
+
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
+
+      
+
+      const file = fileInput.files[0];
+
+      const fileExt = file.name.split('.').pop();
+
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      
+
+      const { error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
+
+      if (error) throw error;
+
+      
+
+      const { data } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
+
+      return data.publicUrl;
+
+    }
+
+
+
+    // --- GUARDAR DATOS ---
+
+
+
+    async function guardarComercio(e) {
+
+      e.preventDefault();
+
+      const btn = document.getElementById('btnGuardarComercio');
+
+      btn.disabled = true; btn.innerText = 'Guardando...';
+
+
 
       try {
-        const { error } = await supabaseClient
-          .from('shop_products')
-          .delete()
-          .eq('id', id);
 
-        if (error) throw error;
+        const id = document.getElementById('shop_id').value;
 
-        cargarProductos();
-      } catch (err) {
-        alert('Error al eliminar producto: ' + err.message);
+        const logoUrl = await subirArchivo('logos', document.getElementById('file_logo'));
+
+        const coverUrl = await subirArchivo('logos', document.getElementById('file_cover_image'));
+
+        const videoUrl = await subirArchivo('videos', document.getElementById('file_video'));
+
+
+
+        const payload = {
+
+          business_id: document.getElementById('shop_business_id').value,
+
+          name: document.getElementById('shop_name').value,
+
+          category: document.getElementById('shop_category').value,
+
+          description: document.getElementById('shop_description').value,
+
+          address: document.getElementById('shop_address').value,
+
+          whatsapp: document.getElementById('shop_whatsapp').value,
+
+          schedule: document.getElementById('shop_schedule').value,
+
+          video_url: document.getElementById('shop_video_url').value
+
+        };
+
+
+
+        if (logoUrl) payload.logo = logoUrl;
+
+        if (coverUrl) payload.cover_image = coverUrl;
+
+        if (videoUrl) payload.video = videoUrl;
+
+
+
+        if (id) {
+
+          const { error } = await supabaseClient.from('shops').update(payload).eq('id', id);
+
+          if (error) throw error;
+
+        } else {
+
+          const { error } = await supabaseClient.from('shops').insert([payload]);
+
+          if (error) throw error;
+
+        }
+
+
+
+        cerrarModales();
+
+        await cargarComercios();
+
+        mostrarToast(id ? 'Comercio actualizado con éxito' : 'Comercio creado con éxito');
+
+      } catch (err) { 
+
+        mostrarToast('Error: ' + err.message, true); 
+
+      } finally {
+
+        btn.disabled = false; btn.innerText = 'Guardar Comercio';
+
       }
+
     }
+
+
+
+    async function guardarProducto(e) {
+
+      e.preventDefault();
+
+      const btn = document.getElementById('btnGuardarProducto');
+
+      btn.disabled = true; btn.innerText = 'Guardando...';
+
+
+
+      try {
+
+        const id = document.getElementById('product_id').value;
+
+        const imgUrl = await subirArchivo('logos', document.getElementById('prod_file'));
+
+        
+
+        const payload = {
+
+          business_id: document.getElementById('prod_business_id').value,
+
+          name: document.getElementById('prod_name').value,
+
+          price: document.getElementById('prod_price').value ? parseFloat(document.getElementById('prod_price').value) : null,
+
+          category: document.getElementById('prod_category').value,
+
+          description: document.getElementById('prod_description').value
+
+        };
+
+        if (imgUrl) payload.image_url = imgUrl;
+
+
+
+        if (id) {
+
+          const { error } = await supabaseClient.from('shop_products').update(payload).eq('id', id);
+
+          if (error) throw error;
+
+        } else {
+
+          const { error } = await supabaseClient.from('shop_products').insert([payload]);
+
+          if (error) throw error;
+
+        }
+
+
+
+        cerrarModales();
+
+        await cargarProductos();
+
+        mostrarToast(id ? 'Producto actualizado' : 'Producto agregado');
+
+      } catch (err) { 
+
+        mostrarToast('Error: ' + err.message, true); 
+
+      } finally {
+
+        btn.disabled = false; btn.innerText = 'Guardar Producto';
+
+      }
+
+    }
+
+
+
+    async function guardarBanner(e) {
+
+      e.preventDefault();
+
+      const btn = document.getElementById('btnGuardarBanner');
+
+      btn.disabled = true; btn.innerText = 'Guardando...';
+
+
+
+      try {
+
+        const id = document.getElementById('banner_id').value;
+
+        const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
+
+        const videoUploadedUrl = await subirArchivo('videos', document.getElementById('banner_video_file'));
+
+        const externalVideoUrl = document.getElementById('banner_video_url').value.trim();
+
+
+
+        const payload = {
+
+          business_id: document.getElementById('banner_business_id').value || null,
+
+          title: document.getElementById('banner_title').value
+
+        };
+
+
+
+        if (imgUrl) payload.image_url = imgUrl;
+
+        
+
+        // Priorizar video subido, luego URL externa
+
+        if (videoUploadedUrl) {
+
+          payload.video_url = videoUploadedUrl;
+
+        } else if (externalVideoUrl) {
+
+          payload.video_url = externalVideoUrl;
+
+        }
+
+
+
+        if (id) {
+
+          const { error } = await supabaseClient.from('shop_banners').update(payload).eq('id', id);
+
+          if (error) throw error;
+
+        } else {
+
+          const { error } = await supabaseClient.from('shop_banners').insert([payload]);
+
+          if (error) throw error;
+
+        }
+
+
+
+        cerrarModales();
+
+        await cargarBanners();
+
+        mostrarToast(id ? 'Elemento de Slider actualizado' : 'Video/Banner agregado al Slider');
+
+      } catch (err) { 
+
+        mostrarToast('Error: ' + err.message, true); 
+
+      } finally {
+
+        btn.disabled = false; btn.innerText = 'Guardar en Slider';
+
+      }
+
+    }
+
+
+
+    // --- ACTUALIZAR DESPLEGABLES DE NEGOCIOS ---
+
+function actualizarSelectsNegocios() {
+
+  // Opción explícita para indicar que el video va al Hero Slider de Inicio
+
+  const defaultOption = '<option value="">🌟 HERO SLIDER PRINCIPAL (Global / Inicio)</option>';
+
+  const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
+
+  
+
+  document.getElementById('prod_business_id').innerHTML = options;
+
+  document.getElementById('banner_business_id').innerHTML = defaultOption + options;
+
+}
+
+
+
+// --- GUARDAR BANNER O VIDEO DEL HERO SLIDER ---
+
+async function guardarBanner(e) {
+
+  e.preventDefault();
+
+  const btn = document.getElementById('btnGuardarBanner');
+
+  btn.disabled = true; 
+
+  btn.innerText = 'Guardando...';
+
+
+
+  try {
+
+    const id = document.getElementById('banner_id').value;
+
+    const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
+
+    const videoUploadedUrl = await subirArchivo('videos', document.getElementById('banner_video_file'));
+
+    const externalVideoUrl = document.getElementById('banner_video_url').value.trim();
+
+    const selectedBusiness = document.getElementById('banner_business_id').value;
+
+
+
+    // Construcción limpia del objeto para Supabase
+
+    const payload = {
+
+      title: document.getElementById('banner_title').value || 'Video Hero Slider',
+
+      business_id: (selectedBusiness && selectedBusiness !== '') ? selectedBusiness : null
+
+    };
+
+
+
+    if (imgUrl) payload.image_url = imgUrl;
+
+    
+
+    // Asigna el video subido al bucket o la URL externa pegada
+
+    if (videoUploadedUrl) {
+
+      payload.video_url = videoUploadedUrl;
+
+    } else if (externalVideoUrl) {
+
+      payload.video_url = externalVideoUrl;
+
+    }
+
+
+
+    if (id) {
+
+      const { error } = await supabaseClient.from('shop_banners').update(payload).eq('id', id);
+
+      if (error) throw error;
+
+    } else {
+
+      const { error } = await supabaseClient.from('shop_banners').insert([payload]);
+
+      if (error) throw error;
+
+    }
+
+
+
+    cerrarModales();
+
+    await cargarBanners();
+
+    mostrarToast(id ? 'Elemento actualizado' : 'Video guardado en Hero Slider');
+
+  } catch (err) { 
+
+    console.error('Detalle error Supabase:', err);
+
+    mostrarToast('Error Supabase: ' + (err.message || err.details || 'Error 400'), true); 
+
+  } finally {
+
+    btn.disabled = false; 
+
+    btn.innerText = 'Guardar en Slider';
+
+  }
+
+}
+
+    function abrirModalComercio(id = null) {
+
+      document.getElementById('formComercio').reset();
+
+      document.getElementById('shop_id').value = '';
+
+      document.getElementById('modalComercioTitle').innerText = id ? 'Editar Comercio' : 'Nuevo Comercio';
+
+      
+
+      if (id) {
+
+        const c = listShops.find(i => i.id == id);
+
+        if (c) {
+
+          document.getElementById('shop_id').value = c.id;
+
+          document.getElementById('shop_business_id').value = c.business_id || '';
+
+          document.getElementById('shop_name').value = c.name || '';
+
+          document.getElementById('shop_category').value = c.category || '';
+
+          document.getElementById('shop_description').value = c.description || '';
+
+          document.getElementById('shop_address').value = c.address || '';
+
+          document.getElementById('shop_whatsapp').value = c.whatsapp || '';
+
+          document.getElementById('shop_schedule').value = c.schedule || '';
+
+          document.getElementById('shop_video_url').value = c.video_url || '';
+
+        }
+
+      }
+
+      document.getElementById('modalComercio').style.display = 'flex';
+
+    }
+
+
+
+    function abrirModalProducto(id = null) { 
+
+      document.getElementById('formProducto').reset();
+
+      document.getElementById('product_id').value = '';
+
+      document.getElementById('modalProductoTitle').innerText = id ? 'Editar Producto' : 'Nuevo Producto';
+
+
+
+      if (id) {
+
+        const p = listProducts.find(i => i.id == id);
+
+        if (p) {
+
+          document.getElementById('product_id').value = p.id;
+
+          document.getElementById('prod_business_id').value = p.business_id || '';
+
+          document.getElementById('prod_name').value = p.name || '';
+
+          document.getElementById('prod_price').value = p.price || '';
+
+          document.getElementById('prod_category').value = p.category || '';
+
+          document.getElementById('prod_description').value = p.description || '';
+
+        }
+
+      }
+
+      document.getElementById('modalProducto').style.display = 'flex'; 
+
+    }
+
+
+
+    function abrirModalBanner(id = null) { 
+
+      document.getElementById('formBanner').reset();
+
+      document.getElementById('banner_id').value = '';
+
+      document.getElementById('modalBannerTitle').innerText = id ? 'Editar Video / Banner' : 'Nuevo Video / Banner para Slider';
+
+
+
+      if (id) {
+
+        const b = listBanners.find(i => i.id == id);
+
+        if (b) {
+
+          document.getElementById('banner_id').value = b.id;
+
+          document.getElementById('banner_business_id').value = b.business_id || '';
+
+          document.getElementById('banner_title').value = b.title || '';
+
+          document.getElementById('banner_video_url').value = b.video_url || '';
+
+        }
+
+      }
+
+      document.getElementById('modalBanner').style.display = 'flex'; 
+
+    }
+
+
+
+    function cerrarModales() { 
+
+      document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); 
+
+    }
+
+
+
+    async function eliminarRegistro(tabla, id, callback) {
+
+      if (!confirm('¿Estás seguro de eliminar este registro de forma permanente?')) return;
+
+      const { error } = await supabaseClient.from(tabla).delete().eq('id', id);
+
+      if (error) {
+
+        mostrarToast('Error al eliminar: ' + error.message, true);
+
+      } else {
+
+        mostrarToast('Registro eliminado correctamente');
+
+        callback();
+
+      }
+
+    }
+
   </script>
+
 </body>
-</html>
+
+</html> 
+
