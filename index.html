@@ -6,41 +6,69 @@
   <title>Administrador General - Supabase</title>
   
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f6f8; color: #333; }
-    h1 { color: #134989; margin-bottom: 20px; }
+    :root {
+      --primary: #134989;
+      --secondary: #275C98;
+      --danger: #d9534f;
+      --success: #28a745;
+      --bg: #f4f6f8;
+      --text: #333;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 20px; background-color: var(--bg); color: var(--text); }
+    h1 { color: var(--primary); margin-bottom: 20px; font-size: 24px; }
     
     /* Pestañas */
-    .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #275C98; }
-    .tab-btn { padding: 10px 20px; background: #e0e0e0; border: none; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: bold; }
-    .tab-btn.active { background: #275C98; color: white; }
+    .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--secondary); }
+    .tab-btn { padding: 12px 24px; background: #e0e0e0; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; color: #555; transition: 0.3s; }
+    .tab-btn:hover { background: #d0d0d0; }
+    .tab-btn.active { background: var(--secondary); color: white; }
 
-    .tab-content { display: none; }
+    .tab-content { display: none; animation: fadeIn 0.4s; }
     .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+    /* Botones */
     .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .btn-primary { background-color: #134989; color: white; }
-    .btn-danger { background-color: #d9534f; color: white; }
+    button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background-color: var(--primary); color: white; }
+    .btn-primary:hover:not(:disabled) { background-color: #0f386b; }
+    .btn-danger { background-color: var(--danger); color: white; }
+    .btn-danger:hover { background-color: #c9302c; }
     .btn-secondary { background-color: #6c757d; color: white; }
-
-    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid #eee; text-align: left; font-size: 13px; }
-    th { background-color: #275C98; color: white; text-transform: uppercase; font-size: 11px; }
+    .btn-secondary:hover { background-color: #5a6268; }
+    
+    /* Tablas */
+    .table-container { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 8px; overflow-x: auto; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: middle; }
+    th { background-color: var(--secondary); color: white; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
     tr:hover { background-color: #f9fbfd; }
-
-    img.thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
-    a.media-link { font-size: 11px; color: #134989; font-weight: bold; text-decoration: none; word-break: break-all; }
+    
+    img.thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+    a.media-link { font-size: 12px; color: var(--primary); font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    a.media-link:hover { text-decoration: underline; }
 
     /* Modal / Formulario */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-    .modal { background: white; padding: 25px; border-radius: 10px; width: 95%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 12px; color: #555; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-    .form-row { display: flex; gap: 10px; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
+    .modal { background: white; padding: 30px; border-radius: 12px; width: 95%; max-width: 750px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .modal h2 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #444; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(19, 73, 137, 0.1); }
+    .form-row { display: flex; gap: 15px; }
     .form-row .form-group { flex: 1; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
+
+    /* Sistema de Notificaciones (Toasts) */
+    #toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 14px 20px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.4s 2.6s; }
+    @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -61,7 +89,9 @@
     <div class="toolbar">
       <button class="btn-primary" onclick="abrirModalComercio()">➕ Nuevo Comercio</button>
     </div>
-    <div id="tabla-comercios">Cargando comercios...</div>
+    <div class="table-container" id="tabla-comercios">
+      <p style="padding: 20px;">Cargando comercios...</p>
+    </div>
   </div>
 
   <!-- TAB PRODUCTOS -->
@@ -69,7 +99,9 @@
     <div class="toolbar">
       <button class="btn-primary" onclick="abrirModalProducto()">➕ Nuevo Producto</button>
     </div>
-    <div id="tabla-productos">Cargando productos...</div>
+    <div class="table-container" id="tabla-productos">
+      <p style="padding: 20px;">Cargando productos...</p>
+    </div>
   </div>
 
   <!-- TAB BANNERS -->
@@ -77,13 +109,15 @@
     <div class="toolbar">
       <button class="btn-primary" onclick="abrirModalBanner()">➕ Nuevo Banner</button>
     </div>
-    <div id="tabla-banners">Cargando banners...</div>
+    <div class="table-container" id="tabla-banners">
+      <p style="padding: 20px;">Cargando banners...</p>
+    </div>
   </div>
 
   <!-- MODAL COMERCIO -->
   <div class="modal-overlay" id="modalComercio">
     <div class="modal">
-      <h2 id="modalComercioTitle">Comercio</h2>
+      <h2 id="modalComercioTitle">Gestión de Comercio</h2>
       <form id="formComercio" onsubmit="guardarComercio(event)">
         <input type="hidden" id="shop_id">
         <div class="form-row">
@@ -94,22 +128,22 @@
           <div class="form-group"><label>Categoría</label><input type="text" id="shop_category"></div>
           <div class="form-group"><label>WhatsApp</label><input type="text" id="shop_whatsapp"></div>
         </div>
-        <div class="form-group"><label>Descripción</label><textarea id="shop_description" rows="2"></textarea></div>
+        <div class="form-group"><label>Descripción</label><textarea id="shop_description" rows="3"></textarea></div>
         <div class="form-row">
           <div class="form-group"><label>Dirección</label><input type="text" id="shop_address"></div>
           <div class="form-group"><label>Horario</label><input type="text" id="shop_schedule"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label>Subir Logo (Bucket: logos)</label><input type="file" id="file_logo" accept="image/*"></div>
-          <div class="form-group"><label>Subir Portada Imagen (Bucket: logos)</label><input type="file" id="file_cover_image" accept="image/*"></div>
+          <div class="form-group"><label>Subir Portada (Bucket: logos)</label><input type="file" id="file_cover_image" accept="image/*"></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label>Subir Video (Bucket: videos)</label><input type="file" id="file_video" accept="video/*"></div>
-          <div class="form-group"><label>URL de Video Externo / YouTube</label><input type="text" id="shop_video_url"></div>
+          <div class="form-group"><label>URL de Video Externo / YouTube</label><input type="url" id="shop_video_url"></div>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
-          <button type="submit" class="btn-primary">Guardar Comercio</button>
+          <button type="submit" class="btn-primary" id="btnGuardarComercio">Guardar Comercio</button>
         </div>
       </form>
     </div>
@@ -118,7 +152,7 @@
   <!-- MODAL PRODUCTO -->
   <div class="modal-overlay" id="modalProducto">
     <div class="modal">
-      <h2 id="modalProductoTitle">Producto</h2>
+      <h2 id="modalProductoTitle">Gestión de Producto</h2>
       <form id="formProducto" onsubmit="guardarProducto(event)">
         <input type="hidden" id="product_id">
         <div class="form-row">
@@ -132,11 +166,11 @@
           <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod_price"></div>
           <div class="form-group"><label>Categoría</label><input type="text" id="prod_category"></div>
         </div>
-        <div class="form-group"><label>Descripción</label><textarea id="prod_description" rows="2"></textarea></div>
-        <div class="form-group"><label>Subir Imagen del Producto (Bucket: logos)</label><input type="file" id="prod_file" accept="image/*"></div>
+        <div class="form-group"><label>Descripción</label><textarea id="prod_description" rows="3"></textarea></div>
+        <div class="form-group"><label>Subir Imagen del Producto</label><input type="file" id="prod_file" accept="image/*"></div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
-          <button type="submit" class="btn-primary">Guardar Producto</button>
+          <button type="submit" class="btn-primary" id="btnGuardarProducto">Guardar Producto</button>
         </div>
       </form>
     </div>
@@ -145,7 +179,7 @@
   <!-- MODAL BANNER -->
   <div class="modal-overlay" id="modalBanner">
     <div class="modal">
-      <h2 id="modalBannerTitle">Banner</h2>
+      <h2 id="modalBannerTitle">Gestión de Banner</h2>
       <form id="formBanner" onsubmit="guardarBanner(event)">
         <input type="hidden" id="banner_id">
         <div class="form-row">
@@ -155,16 +189,20 @@
           </div>
           <div class="form-group"><label>Título del Banner</label><input type="text" id="banner_title"></div>
         </div>
-        <div class="form-group"><label>Subir Imagen del Banner (Bucket: logos)</label><input type="file" id="banner_file" accept="image/*"></div>
+        <div class="form-group"><label>Subir Imagen del Banner</label><input type="file" id="banner_file" accept="image/*"></div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
-          <button type="submit" class="btn-primary">Guardar Banner</button>
+          <button type="submit" class="btn-primary" id="btnGuardarBanner">Guardar Banner</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Contenedor Toast -->
+  <div id="toast">Notificación</div>
+
   <script>
+    // Configuración de Supabase
     const SUPABASE_URL = 'https://jpukgeomsmwyxtqnpcsd.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWtnZW9tc213eXh0cW5wY3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDA3MzQsImV4cCI6MjEwNDU3NjczNH0.aALmQGfEkU4YCJM_9yUGJoUYfFVSLaZe0tnOlznKm54';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -174,6 +212,15 @@
     document.addEventListener('DOMContentLoaded', () => {
       cargarTodo();
     });
+
+    // Función global para mostrar alertas elegantes
+    function mostrarToast(mensaje, esError = false) {
+      const toast = document.getElementById("toast");
+      toast.innerText = mensaje;
+      toast.style.backgroundColor = esError ? "var(--danger)" : "var(--success)";
+      toast.className = "show";
+      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
 
     async function cargarTodo() {
       await Promise.all([cargarComercios(), cargarProductos(), cargarBanners()]);
@@ -188,10 +235,11 @@
       document.getElementById('tab-' + tabName).classList.add('active');
     }
 
-    // --- COMERCIOS ---
+    // --- RENDERIZADO DE TABLAS ---
+
     async function cargarComercios() {
       const { data, error } = await supabaseClient.from('shops').select('*').order('id', { ascending: false });
-      if (error) return console.error(error);
+      if (error) return mostrarToast('Error cargando comercios: ' + error.message, true);
       listShops = data || [];
       
       let html = `<table><thead><tr><th>ID / BusinessID</th><th>Logo</th><th>Nombre</th><th>Categoría</th><th>Portada</th><th>Video</th><th>Acciones</th></tr></thead><tbody>`;
@@ -201,13 +249,13 @@
         const video = c.video || c.video_url || c.cover_video ? `<a href="${c.video || c.video_url || c.cover_video}" target="_blank" class="media-link">▶ Ver Video</a>` : '—';
         
         html += `<tr>
-          <td>#${c.id} <br><small style="color:#666;">${c.business_id || 'Sin ID'}</small></td>
+          <td>#${c.id} <br><small style="color:#888;">${c.business_id || 'Sin ID'}</small></td>
           <td>${logo}</td>
           <td><strong>${c.name || ''}</strong></td>
           <td>${c.category || ''}</td>
           <td>${cover}</td>
           <td>${video}</td>
-          <td>
+          <td style="min-width: 110px;">
             <button class="btn-primary" onclick="abrirModalComercio(${c.id})">✏️</button>
             <button class="btn-danger" onclick="eliminarRegistro('shops', ${c.id}, cargarComercios)">🗑️</button>
           </td>
@@ -215,15 +263,15 @@
       });
       html += `</tbody></table>`;
       document.getElementById('tabla-comercios').innerHTML = html;
+      actualizarSelectsNegocios(); // Refrescar los select de otros tabs
     }
 
-    // --- PRODUCTOS ---
     async function cargarProductos() {
       const { data, error } = await supabaseClient.from('shop_products').select('*').order('created_at', { ascending: false });
       if (error) return console.error(error);
       listProducts = data || [];
 
-      let html = `<table><thead><tr><th>Imagen</th><th>Producto</th><th>Business ID</th><th>Precio</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>`;
+      let html = `<table><thead><tr><th>Imagen</th><th>Producto</th><th>Comercio (ID)</th><th>Precio</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>`;
       listProducts.forEach(p => {
         const img = p.image_url ? `<img src="${p.image_url}" class="thumb">` : '—';
         html += `<tr>
@@ -232,7 +280,8 @@
           <td>${p.business_id || ''}</td>
           <td>$${p.price || 0}</td>
           <td>${p.category || ''}</td>
-          <td>
+          <td style="min-width: 110px;">
+            <button class="btn-primary" onclick="abrirModalProducto('${p.id}')">✏️</button>
             <button class="btn-danger" onclick="eliminarRegistro('shop_products', '${p.id}', cargarProductos)">🗑️</button>
           </td>
         </tr>`;
@@ -241,20 +290,20 @@
       document.getElementById('tabla-productos').innerHTML = html;
     }
 
-    // --- BANNERS ---
     async function cargarBanners() {
       const { data, error } = await supabaseClient.from('shop_banners').select('*').order('created_at', { ascending: false });
       if (error) return console.error(error);
       listBanners = data || [];
 
-      let html = `<table><thead><tr><th>Imagen</th><th>Título</th><th>Business ID</th><th>Acciones</th></tr></thead><tbody>`;
+      let html = `<table><thead><tr><th>Imagen</th><th>Título</th><th>Comercio (ID)</th><th>Acciones</th></tr></thead><tbody>`;
       listBanners.forEach(b => {
         const img = b.image_url ? `<img src="${b.image_url}" class="thumb">` : '—';
         html += `<tr>
           <td>${img}</td>
           <td><strong>${b.title || 'Sin Título'}</strong></td>
           <td>${b.business_id || ''}</td>
-          <td>
+          <td style="min-width: 110px;">
+            <button class="btn-primary" onclick="abrirModalBanner('${b.id}')">✏️</button>
             <button class="btn-danger" onclick="eliminarRegistro('shop_banners', '${b.id}', cargarBanners)">🗑️</button>
           </td>
         </tr>`;
@@ -263,20 +312,28 @@
       document.getElementById('tabla-banners').innerHTML = html;
     }
 
-    // --- SUBIR ARCHIVOS ---
+    // --- CARGA DE ARCHIVOS ---
     async function subirArchivo(bucket, fileInput) {
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
+      
       const file = fileInput.files[0];
-      if (!file) return null;
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
       const { error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
       if (error) throw error;
-      return supabaseClient.storage.from(bucket).getPublicUrl(fileName).data.publicUrl;
+      
+      const { data } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
+      return data.publicUrl;
     }
 
-    // --- GUARDAR COMERCIO ---
+    // --- GUARDAR DATOS (CREATE & UPDATE) ---
+
     async function guardarComercio(e) {
       e.preventDefault();
+      const btn = document.getElementById('btnGuardarComercio');
+      btn.disabled = true; btn.innerText = 'Guardando...';
+
       try {
         const id = document.getElementById('shop_id').value;
         const logoUrl = await subirArchivo('logos', document.getElementById('file_logo'));
@@ -299,57 +356,94 @@
         if (videoUrl) payload.video = videoUrl;
 
         if (id) {
-          await supabaseClient.from('shops').update(payload).eq('id', id);
+          const { error } = await supabaseClient.from('shops').update(payload).eq('id', id);
+          if(error) throw error;
         } else {
-          await supabaseClient.from('shops').insert([payload]);
+          const { error } = await supabaseClient.from('shops').insert([payload]);
+          if(error) throw error;
         }
 
         cerrarModales();
-        await cargarTodo();
-        alert('Comercio guardado correctamente');
-      } catch (err) { alert('Error: ' + err.message); }
+        await cargarComercio(); 
+        mostrarToast(id ? 'Comercio actualizado con éxito' : 'Comercio creado con éxito');
+      } catch (err) { 
+        mostrarToast('Error: ' + err.message, true); 
+      } finally {
+        btn.disabled = false; btn.innerText = 'Guardar Comercio';
+      }
     }
 
-    // --- GUARDAR PRODUCTO ---
     async function guardarProducto(e) {
       e.preventDefault();
+      const btn = document.getElementById('btnGuardarProducto');
+      btn.disabled = true; btn.innerText = 'Guardando...';
+
       try {
+        const id = document.getElementById('product_id').value;
         const imgUrl = await subirArchivo('logos', document.getElementById('prod_file'));
+        
         const payload = {
           business_id: document.getElementById('prod_business_id').value,
           name: document.getElementById('prod_name').value,
-          price: document.getElementById('prod_price').value,
+          price: document.getElementById('prod_price').value ? parseFloat(document.getElementById('prod_price').value) : null,
           category: document.getElementById('prod_category').value,
           description: document.getElementById('prod_description').value
         };
         if (imgUrl) payload.image_url = imgUrl;
 
-        await supabaseClient.from('shop_products').insert([payload]);
+        if (id) {
+          const { error } = await supabaseClient.from('shop_products').update(payload).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabaseClient.from('shop_products').insert([payload]);
+          if (error) throw error;
+        }
+
         cerrarModales();
         await cargarProductos();
-        alert('Producto agregado');
-      } catch (err) { alert('Error: ' + err.message); }
+        mostrarToast(id ? 'Producto actualizado' : 'Producto agregado');
+      } catch (err) { 
+        mostrarToast('Error: ' + err.message, true); 
+      } finally {
+        btn.disabled = false; btn.innerText = 'Guardar Producto';
+      }
     }
 
-    // --- GUARDAR BANNER ---
     async function guardarBanner(e) {
       e.preventDefault();
+      const btn = document.getElementById('btnGuardarBanner');
+      btn.disabled = true; btn.innerText = 'Guardando...';
+
       try {
+        const id = document.getElementById('banner_id').value;
         const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
+        
         const payload = {
           business_id: document.getElementById('banner_business_id').value,
           title: document.getElementById('banner_title').value
         };
         if (imgUrl) payload.image_url = imgUrl;
 
-        await supabaseClient.from('shop_banners').insert([payload]);
+        if (id) {
+          const { error } = await supabaseClient.from('shop_banners').update(payload).eq('id', id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabaseClient.from('shop_banners').insert([payload]);
+          if (error) throw error;
+        }
+
         cerrarModales();
         await cargarBanners();
-        alert('Banner agregado');
-      } catch (err) { alert('Error: ' + err.message); }
+        mostrarToast(id ? 'Banner actualizado' : 'Banner agregado');
+      } catch (err) { 
+        mostrarToast('Error: ' + err.message, true); 
+      } finally {
+        btn.disabled = false; btn.innerText = 'Guardar Banner';
+      }
     }
 
-    // --- UTILS ---
+    // --- UTILIDADES Y APERTURA DE MODALES ---
+
     function actualizarSelectsNegocios() {
       const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
       document.getElementById('prod_business_id').innerHTML = options;
@@ -359,30 +453,73 @@
     function abrirModalComercio(id = null) {
       document.getElementById('formComercio').reset();
       document.getElementById('shop_id').value = '';
+      document.getElementById('modalComercioTitle').innerText = id ? 'Editar Comercio' : 'Nuevo Comercio';
+      
       if (id) {
-        const c = listShops.find(i => i.id === id);
-        document.getElementById('shop_id').value = c.id;
-        document.getElementById('shop_business_id').value = c.business_id || '';
-        document.getElementById('shop_name').value = c.name || '';
-        document.getElementById('shop_category').value = c.category || '';
-        document.getElementById('shop_description').value = c.description || '';
-        document.getElementById('shop_address').value = c.address || '';
-        document.getElementById('shop_whatsapp').value = c.whatsapp || '';
-        document.getElementById('shop_schedule').value = c.schedule || '';
-        document.getElementById('shop_video_url').value = c.video_url || '';
+        const c = listShops.find(i => i.id == id);
+        if(c) {
+          document.getElementById('shop_id').value = c.id;
+          document.getElementById('shop_business_id').value = c.business_id || '';
+          document.getElementById('shop_name').value = c.name || '';
+          document.getElementById('shop_category').value = c.category || '';
+          document.getElementById('shop_description').value = c.description || '';
+          document.getElementById('shop_address').value = c.address || '';
+          document.getElementById('shop_whatsapp').value = c.whatsapp || '';
+          document.getElementById('shop_schedule').value = c.schedule || '';
+          document.getElementById('shop_video_url').value = c.video_url || '';
+        }
       }
       document.getElementById('modalComercio').style.display = 'flex';
     }
 
-    function abrirModalProducto() { document.getElementById('modalProducto').style.display = 'flex'; }
-    function abrirModalBanner() { document.getElementById('modalBanner').style.display = 'flex'; }
-    function cerrarModales() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+    function abrirModalProducto(id = null) { 
+      document.getElementById('formProducto').reset();
+      document.getElementById('product_id').value = '';
+      document.getElementById('modalProductoTitle').innerText = id ? 'Editar Producto' : 'Nuevo Producto';
+
+      if (id) {
+        const p = listProducts.find(i => i.id == id);
+        if(p) {
+          document.getElementById('product_id').value = p.id;
+          document.getElementById('prod_business_id').value = p.business_id || '';
+          document.getElementById('prod_name').value = p.name || '';
+          document.getElementById('prod_price').value = p.price || '';
+          document.getElementById('prod_category').value = p.category || '';
+          document.getElementById('prod_description').value = p.description || '';
+        }
+      }
+      document.getElementById('modalProducto').style.display = 'flex'; 
+    }
+
+    function abrirModalBanner(id = null) { 
+      document.getElementById('formBanner').reset();
+      document.getElementById('banner_id').value = '';
+      document.getElementById('modalBannerTitle').innerText = id ? 'Editar Banner' : 'Nuevo Banner';
+
+      if (id) {
+        const b = listBanners.find(i => i.id == id);
+        if(b) {
+          document.getElementById('banner_id').value = b.id;
+          document.getElementById('banner_business_id').value = b.business_id || '';
+          document.getElementById('banner_title').value = b.title || '';
+        }
+      }
+      document.getElementById('modalBanner').style.display = 'flex'; 
+    }
+
+    function cerrarModales() { 
+      document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); 
+    }
 
     async function eliminarRegistro(tabla, id, callback) {
-      if (!confirm('¿Estás seguro de eliminar este registro?')) return;
+      if (!confirm('¿Estás seguro de eliminar este registro de forma permanente?')) return;
       const { error } = await supabaseClient.from(tabla).delete().eq('id', id);
-      if (error) alert(error.message);
-      else callback();
+      if (error) {
+        mostrarToast('Error al eliminar: ' + error.message, true);
+      } else {
+        mostrarToast('Registro eliminado correctamente');
+        callback();
+      }
     }
   </script>
 </body>
