@@ -64,7 +64,7 @@
     .form-row .form-group { flex: 1; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
 
-    /* Sistema de Notificaciones (Toasts) */
+    /* Sistema de Notificaciones (Toast) */
     #toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 14px 20px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.4s 2.6s; }
     @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
@@ -75,13 +75,13 @@
 </head>
 <body>
 
-  <h1>Administrador de Comercios, Banners y Productos</h1>
+  <h1>Administrador de Comercios, Hero Slider / Videos y Productos</h1>
 
   <!-- Pestañas -->
   <div class="tabs">
     <button class="tab-btn active" onclick="cambiarTab('comercios')">🏪 Comercios</button>
     <button class="tab-btn" onclick="cambiarTab('productos')">📦 Productos</button>
-    <button class="tab-btn" onclick="cambiarTab('banners')">🖼️ Banners</button>
+    <button class="tab-btn" onclick="cambiarTab('banners')">🎬 Hero Slider / Videos</button>
   </div>
 
   <!-- TAB COMERCIOS -->
@@ -104,13 +104,13 @@
     </div>
   </div>
 
-  <!-- TAB BANNERS -->
+  <!-- TAB BANNERS / HERO SLIDER -->
   <div id="tab-banners" class="tab-content">
     <div class="toolbar">
-      <button class="btn-primary" onclick="abrirModalBanner()">➕ Nuevo Banner</button>
+      <button class="btn-primary" onclick="abrirModalBanner()">➕ Nuevo Video / Banner para Slider</button>
     </div>
     <div class="table-container" id="tabla-banners">
-      <p style="padding: 20px;">Cargando banners...</p>
+      <p style="padding: 20px;">Cargando elementos del slider...</p>
     </div>
   </div>
 
@@ -167,7 +167,7 @@
           <div class="form-group"><label>Categoría</label><input type="text" id="prod_category"></div>
         </div>
         <div class="form-group"><label>Descripción</label><textarea id="prod_description" rows="3"></textarea></div>
-        <div class="form-group"><label>Subir Imagen del Producto</label><input type="file" id="prod_file" accept="image/*"></div>
+        <div class="form-group"><label>Subir Imagen del Producto (Bucket: logos)</label><input type="file" id="prod_file" accept="image/*"></div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
           <button type="submit" class="btn-primary" id="btnGuardarProducto">Guardar Producto</button>
@@ -176,23 +176,39 @@
     </div>
   </div>
 
-  <!-- MODAL BANNER -->
+  <!-- MODAL BANNER / HERO SLIDER (SOPORTA VIDEOS MP4 E IMÁGENES) -->
   <div class="modal-overlay" id="modalBanner">
     <div class="modal">
-      <h2 id="modalBannerTitle">Gestión de Banner</h2>
+      <h2 id="modalBannerTitle">Gestión de Video / Banner Hero Slider</h2>
       <form id="formBanner" onsubmit="guardarBanner(event)">
         <input type="hidden" id="banner_id">
         <div class="form-row">
           <div class="form-group">
-            <label>Comercio Asociado (business_id) *</label>
-            <select id="banner_business_id" required></select>
+            <label>Comercio Asociado (Opcional)</label>
+            <select id="banner_business_id"></select>
           </div>
-          <div class="form-group"><label>Título del Banner</label><input type="text" id="banner_title"></div>
+          <div class="form-group"><label>Título o Descripción del Video/Banner</label><input type="text" id="banner_title" placeholder="Ej: Video Promocional 1"></div>
         </div>
-        <div class="form-group"><label>Subir Imagen del Banner</label><input type="file" id="banner_file" accept="image/*"></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Subir Archivo Video MP4 (Bucket: videos)</label>
+            <input type="file" id="banner_video_file" accept="video/*">
+          </div>
+          <div class="form-group">
+            <label>O Pegar URL Directa de Video MP4 (ej: Imgur)</label>
+            <input type="url" id="banner_video_url" placeholder="https://i.imgur.com/pwQfKed.mp4">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>O Subir Imagen Estática (Si no es video)</label>
+          <input type="file" id="banner_file" accept="image/*">
+        </div>
+
         <div class="modal-actions">
           <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
-          <button type="submit" class="btn-primary" id="btnGuardarBanner">Guardar Banner</button>
+          <button type="submit" class="btn-primary" id="btnGuardarBanner">Guardar en Slider</button>
         </div>
       </form>
     </div>
@@ -202,7 +218,6 @@
   <div id="toast">Notificación</div>
 
   <script>
-    // Configuración de Supabase
     const SUPABASE_URL = 'https://jpukgeomsmwyxtqnpcsd.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWtnZW9tc213eXh0cW5wY3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDA3MzQsImV4cCI6MjEwNDU3NjczNH0.aALmQGfEkU4YCJM_9yUGJoUYfFVSLaZe0tnOlznKm54';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -213,7 +228,6 @@
       cargarTodo();
     });
 
-    // Función global para mostrar alertas elegantes
     function mostrarToast(mensaje, esError = false) {
       const toast = document.getElementById("toast");
       toast.innerText = mensaje;
@@ -235,8 +249,7 @@
       document.getElementById('tab-' + tabName).classList.add('active');
     }
 
-    // --- RENDERIZADO DE TABLAS ---
-
+    // --- COMERCIOS ---
     async function cargarComercios() {
       const { data, error } = await supabaseClient.from('shops').select('*').order('id', { ascending: false });
       if (error) return mostrarToast('Error cargando comercios: ' + error.message, true);
@@ -263,9 +276,10 @@
       });
       html += `</tbody></table>`;
       document.getElementById('tabla-comercios').innerHTML = html;
-      actualizarSelectsNegocios(); // Refrescar los select de otros tabs
+      actualizarSelectsNegocios();
     }
 
+    // --- PRODUCTOS ---
     async function cargarProductos() {
       const { data, error } = await supabaseClient.from('shop_products').select('*').order('created_at', { ascending: false });
       if (error) return console.error(error);
@@ -290,18 +304,30 @@
       document.getElementById('tabla-productos').innerHTML = html;
     }
 
+    // --- BANNERS / VIDEOS DEL HERO SLIDER ---
     async function cargarBanners() {
       const { data, error } = await supabaseClient.from('shop_banners').select('*').order('created_at', { ascending: false });
       if (error) return console.error(error);
       listBanners = data || [];
 
-      let html = `<table><thead><tr><th>Imagen</th><th>Título</th><th>Comercio (ID)</th><th>Acciones</th></tr></thead><tbody>`;
+      let html = `<table><thead><tr><th>Vista Previa / Media</th><th>Título / Ref</th><th>Tipo</th><th>Comercio (ID)</th><th>Acciones</th></tr></thead><tbody>`;
       listBanners.forEach(b => {
-        const img = b.image_url ? `<img src="${b.image_url}" class="thumb">` : '—';
+        let mediaPreview = '—';
+        let tipo = 'Imagen';
+
+        if (b.video_url) {
+          mediaPreview = `<video src="${b.video_url}" width="80" height="50" style="border-radius:6px; object-fit:cover;" autoplay muted loop></video>`;
+          tipo = '🎥 Video';
+        } else if (b.image_url) {
+          mediaPreview = `<img src="${b.image_url}" class="thumb">`;
+          tipo = '🖼️ Imagen';
+        }
+
         html += `<tr>
-          <td>${img}</td>
+          <td>${mediaPreview}</td>
           <td><strong>${b.title || 'Sin Título'}</strong></td>
-          <td>${b.business_id || ''}</td>
+          <td><span style="font-size:11px; background:#e9ecef; padding:4px 8px; border-radius:10px; font-weight:bold;">${tipo}</span></td>
+          <td>${b.business_id || 'General / Global'}</td>
           <td style="min-width: 110px;">
             <button class="btn-primary" onclick="abrirModalBanner('${b.id}')">✏️</button>
             <button class="btn-danger" onclick="eliminarRegistro('shop_banners', '${b.id}', cargarBanners)">🗑️</button>
@@ -312,7 +338,7 @@
       document.getElementById('tabla-banners').innerHTML = html;
     }
 
-    // --- CARGA DE ARCHIVOS ---
+    // --- SUBIR ARCHIVOS ---
     async function subirArchivo(bucket, fileInput) {
       if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
       
@@ -327,7 +353,7 @@
       return data.publicUrl;
     }
 
-    // --- GUARDAR DATOS (CREATE & UPDATE) ---
+    // --- GUARDAR DATOS ---
 
     async function guardarComercio(e) {
       e.preventDefault();
@@ -357,14 +383,14 @@
 
         if (id) {
           const { error } = await supabaseClient.from('shops').update(payload).eq('id', id);
-          if(error) throw error;
+          if (error) throw error;
         } else {
           const { error } = await supabaseClient.from('shops').insert([payload]);
-          if(error) throw error;
+          if (error) throw error;
         }
 
         cerrarModales();
-        await cargarComercio(); 
+        await cargarComercios();
         mostrarToast(id ? 'Comercio actualizado con éxito' : 'Comercio creado con éxito');
       } catch (err) { 
         mostrarToast('Error: ' + err.message, true); 
@@ -417,12 +443,22 @@
       try {
         const id = document.getElementById('banner_id').value;
         const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
-        
+        const videoUploadedUrl = await subirArchivo('videos', document.getElementById('banner_video_file'));
+        const externalVideoUrl = document.getElementById('banner_video_url').value.trim();
+
         const payload = {
-          business_id: document.getElementById('banner_business_id').value,
+          business_id: document.getElementById('banner_business_id').value || null,
           title: document.getElementById('banner_title').value
         };
+
         if (imgUrl) payload.image_url = imgUrl;
+        
+        // Priorizar video subido, luego URL externa
+        if (videoUploadedUrl) {
+          payload.video_url = videoUploadedUrl;
+        } else if (externalVideoUrl) {
+          payload.video_url = externalVideoUrl;
+        }
 
         if (id) {
           const { error } = await supabaseClient.from('shop_banners').update(payload).eq('id', id);
@@ -434,20 +470,22 @@
 
         cerrarModales();
         await cargarBanners();
-        mostrarToast(id ? 'Banner actualizado' : 'Banner agregado');
+        mostrarToast(id ? 'Elemento de Slider actualizado' : 'Video/Banner agregado al Slider');
       } catch (err) { 
         mostrarToast('Error: ' + err.message, true); 
       } finally {
-        btn.disabled = false; btn.innerText = 'Guardar Banner';
+        btn.disabled = false; btn.innerText = 'Guardar en Slider';
       }
     }
 
-    // --- UTILIDADES Y APERTURA DE MODALES ---
+    // --- MODALES Y AUXILIARES ---
 
     function actualizarSelectsNegocios() {
+      const defaultOption = '<option value="">-- Sin Comercio (Global) --</option>';
       const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
+      
       document.getElementById('prod_business_id').innerHTML = options;
-      document.getElementById('banner_business_id').innerHTML = options;
+      document.getElementById('banner_business_id').innerHTML = defaultOption + options;
     }
 
     function abrirModalComercio(id = null) {
@@ -457,7 +495,7 @@
       
       if (id) {
         const c = listShops.find(i => i.id == id);
-        if(c) {
+        if (c) {
           document.getElementById('shop_id').value = c.id;
           document.getElementById('shop_business_id').value = c.business_id || '';
           document.getElementById('shop_name').value = c.name || '';
@@ -479,7 +517,7 @@
 
       if (id) {
         const p = listProducts.find(i => i.id == id);
-        if(p) {
+        if (p) {
           document.getElementById('product_id').value = p.id;
           document.getElementById('prod_business_id').value = p.business_id || '';
           document.getElementById('prod_name').value = p.name || '';
@@ -494,14 +532,15 @@
     function abrirModalBanner(id = null) { 
       document.getElementById('formBanner').reset();
       document.getElementById('banner_id').value = '';
-      document.getElementById('modalBannerTitle').innerText = id ? 'Editar Banner' : 'Nuevo Banner';
+      document.getElementById('modalBannerTitle').innerText = id ? 'Editar Video / Banner' : 'Nuevo Video / Banner para Slider';
 
       if (id) {
         const b = listBanners.find(i => i.id == id);
-        if(b) {
+        if (b) {
           document.getElementById('banner_id').value = b.id;
           document.getElementById('banner_business_id').value = b.business_id || '';
           document.getElementById('banner_title').value = b.title || '';
+          document.getElementById('banner_video_url').value = b.video_url || '';
         }
       }
       document.getElementById('modalBanner').style.display = 'flex'; 
