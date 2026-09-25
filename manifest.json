@@ -1,11 +1,11 @@
 {
   "name": "Administrador General - Supabase",
   "short_name": "Admin App",
-  "description": "Panel de administración para comercios, productos y hero slider.",
+  "description": "Panel de administración.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f6f8",
-  "theme_color": "#134989",
+  "theme_color": "#ffffff",
   "orientation": "portrait-primary",
   "icons": [
     {
