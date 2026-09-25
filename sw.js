@@ -2,9 +2,10 @@ const CACHE_NAME = 'admin-pwa-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
-
 // Evento de instalación: guarda los archivos esenciales en la memoria caché
 self.addEventListener('install', (event) => {
   event.waitUntil(
