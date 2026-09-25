@@ -240,6 +240,13 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       cargarTodo();
+      
+      // REGISTRAR SERVICE WORKER
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registrado con éxito', reg))
+          .catch(err => console.error('Error registrando Service Worker', err));
+      }
     });
 
     function mostrarToast(mensaje, esError = false) {
