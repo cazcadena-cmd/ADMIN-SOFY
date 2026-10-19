@@ -191,6 +191,34 @@
     @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
     @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
+    /* ===== Popup Instalar PWA ===== */
+    .install-overlay { position: fixed; inset: 0; background: rgba(6, 14, 28, 0.55); backdrop-filter: blur(4px); z-index: 5000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.35s, visibility 0.35s; padding: 16px; }
+    .install-overlay.show { opacity: 1; visibility: visible; }
+    .install-sheet { position: relative; width: min(430px, 100%); background: #fff; border-radius: 24px; box-shadow: 0 34px 80px rgba(4, 18, 40, 0.5); transform: translateY(70px) scale(0.95); transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15); }
+    .install-overlay.show .install-sheet { transform: none; }
+    .install-close { position: absolute; top: 12px; right: 12px; z-index: 3; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.18); color: #fff; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid rgba(255,255,255,0.35); }
+    .install-close:hover { background: rgba(255,255,255,0.32); }
+    .install-band { height: 96px; background: linear-gradient(130deg, #0b2a55 0%, var(--primary) 55%, #1d6cae 120%); border-radius: 24px 24px 120px 120px / 24px 24px 70px 70px; position: relative; overflow: hidden; }
+    .install-band::before { content: ""; position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.22) 0%, transparent 65%); top: -90px; right: -30px; }
+    .install-band::after { content: ""; position: absolute; width: 120px; height: 120px; border-radius: 50%; border: 26px solid rgba(255,255,255,0.07); bottom: -80px; left: -20px; }
+    .install-icon-wrap { display: flex; justify-content: center; margin-top: -52px; position: relative; z-index: 2; }
+    .install-icon { width: 96px; height: 96px; border-radius: 24px; border: 4px solid #fff; box-shadow: 0 14px 34px rgba(11, 42, 85, 0.4), 0 0 0 8px rgba(19, 73, 137, 0.12); object-fit: cover; background: #fff; animation: iconFloat 3s ease-in-out infinite; }
+    .install-icon-fallback { display: none; width: 96px; height: 96px; border-radius: 24px; border: 4px solid #fff; background: linear-gradient(130deg, #0b2a55, var(--primary)); color: #fff; align-items: center; justify-content: center; box-shadow: 0 14px 34px rgba(11, 42, 85, 0.4); }
+    .install-icon-fallback svg.lucide { width: 44px; height: 44px; }
+    @keyframes iconFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    .install-body { padding: 12px 24px 24px; text-align: center; }
+    .install-body h3 { margin: 4px 0 6px; font-size: 20px; font-weight: 800; color: #0b2a55; letter-spacing: -0.3px; }
+    .install-body p { margin: 0; font-size: 13.5px; color: #5b6672; line-height: 1.55; }
+    .install-steps { text-align: left; background: #f3f8fd; border: 1px solid #d9e7f6; border-radius: 14px; padding: 12px 14px; margin-top: 14px; }
+    .install-steps .step { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 13px; color: #33415a; line-height: 1.5; }
+    .install-steps .step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .install-steps svg.lucide { width: 15px; height: 15px; vertical-align: -2px; }
+    .install-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-instalar { flex: 1.4; background: linear-gradient(130deg, #0b2a55, var(--primary)); color: #fff; padding: 13px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; box-shadow: 0 10px 22px rgba(19, 73, 137, 0.4); }
+    .btn-instalar:hover { transform: translateY(-1px); box-shadow: 0 14px 26px rgba(19, 73, 137, 0.55); }
+    .btn-ahorano { flex: 1; background: #eef1f6; color: #5b6672; padding: 13px; border-radius: 12px; }
+    .btn-ahorano:hover { background: #e2e7ef; }
+
     @media (max-width: 760px) {
       body { padding: 12px; }
       .form-row { flex-direction: column; gap: 0; }
@@ -509,6 +537,42 @@
 <div class="modal-overlay" id="visorMedia" onclick="if(event.target===this)cerrarVisor()">
   <button class="visor-close" onclick="cerrarVisor()" title="Cerrar"><i data-lucide="x"></i></button>
   <div id="visorContenido"></div>
+</div>
+
+<!-- ===== POPUP INSTALAR APP (PWA) ===== -->
+<div class="install-overlay" id="installPopup" onclick="if(event.target===this)cerrarPopupInstalar()">
+  <div class="install-sheet">
+    <button class="install-close" onclick="cerrarPopupInstalar()" title="Cerrar"><i data-lucide="x"></i></button>
+    <div class="install-band"></div>
+    <div class="install-icon-wrap">
+      <img src="./icon-512.png" alt="Admin Sofy" class="install-icon"
+           onerror="this.style.display='none';document.getElementById('installIconFallback').style.display='flex'">
+      <div class="install-icon-fallback" id="installIconFallback"><i data-lucide="rocket"></i></div>
+    </div>
+    <div class="install-body">
+      <h3>Instala Admin Sofy</h3>
+      <p id="installSubtitulo">Lleva tu panel siempre contigo. Acceso directo, pantalla completa y carga ultra rápida.</p>
+
+      <!-- Pasos para iPhone (Safari) -->
+      <div class="install-steps" id="installIOSSteps" style="display:none;">
+        <div class="step"><span class="step-num">1</span><span>Toca el botón <strong>Compartir</strong> <i data-lucide="share"></i> en la barra de Safari.</span></div>
+        <div class="step"><span class="step-num">2</span><span>Baja y elige <strong>"Añadir a pantalla de inicio"</strong> <i data-lucide="plus-square"></i>.</span></div>
+        <div class="step"><span class="step-num">3</span><span>Pulsa <strong>Añadir</strong> y el icono aparecerá en tu iPhone.</span></div>
+      </div>
+
+      <!-- Pasos manuales para Android (respaldo si no hay prompt nativo) -->
+      <div class="install-steps" id="installAndroidSteps" style="display:none;">
+        <div class="step"><span class="step-num">1</span><span>Toca el menú <strong>⋮</strong> (arriba a la derecha) en Chrome.</span></div>
+        <div class="step"><span class="step-num">2</span><span>Elige <strong>"Instalar aplicación"</strong> o <strong>"Añadir a pantalla principal"</strong>.</span></div>
+        <div class="step"><span class="step-num">3</span><span>Confirma en <strong>Instalar</strong> y aparecerá el icono.</span></div>
+      </div>
+
+      <div class="install-actions">
+        <button type="button" class="btn-ahorano" onclick="cerrarPopupInstalar()">Ahora no</button>
+        <button type="button" class="btn-instalar" id="btnInstalarApp" onclick="instalarAppAhora()"><i data-lucide="download"></i>Instalar ahora</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Contenedor Toast -->
@@ -1988,6 +2052,95 @@
     mostrarToast(`"${it.name}" eliminado del bucket`);
     cargarMedia();
   }
+
+  /* ============================================================
+     POPUP DE INSTALACIÓN PWA
+     - Android: botón "Instalar ahora" usa el prompt nativo
+     - iPhone: muestra las instrucciones (Compartir → Añadir)
+     - "Ahora no" vuelve a mostrar el popup en la PRÓXIMA visita
+     - Si la app ya está instalada (standalone), nunca aparece
+     ============================================================ */
+  let deferredInstallPrompt = null;
+
+  function esIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  function esMovil() {
+    return esIOS() || /android|mobile|tablet/i.test(navigator.userAgent);
+  }
+
+  function appYaInstalada() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.matchMedia('(display-mode: fullscreen)').matches ||
+           navigator.standalone === true ||
+           localStorage.getItem('pwa_instalada') === '1';
+  }
+
+  function mostrarPopupInstalar() {
+    if (!esMovil()) return;
+    if (appYaInstalada()) return;
+    if (sessionStorage.getItem('install_popup_oculto') === '1') return;
+
+    const popup = document.getElementById('installPopup');
+    const ios = esIOS();
+
+    // Adapta el contenido según el dispositivo
+    document.getElementById('installIOSSteps').style.display = ios ? 'block' : 'none';
+    document.getElementById('installAndroidSteps').style.display = 'none';
+    document.getElementById('installSubtitulo').innerText = ios
+      ? 'Añade Admin Sofy a tu pantalla de inicio y úsala como app nativa.'
+      : 'Lleva tu panel siempre contigo. Acceso directo, pantalla completa y carga ultra rápida.';
+    document.getElementById('btnInstalarApp').style.display = ios ? 'none' : 'inline-flex';
+
+    popup.classList.add('show');
+    refreshIcons();
+  }
+
+  function cerrarPopupInstalar(instalada = false) {
+    document.getElementById('installPopup').classList.remove('show');
+    if (instalada) {
+      // Ya instalada: nunca más aparece
+      localStorage.setItem('pwa_instalada', '1');
+    } else {
+      // "Ahora no": reaparece en la próxima visita (solo se oculta esta sesión)
+      sessionStorage.setItem('install_popup_oculto', '1');
+    }
+  }
+
+  async function instalarAppAhora() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        cerrarPopupInstalar(true);
+        mostrarToast('¡App instalada! Búscala en tu pantalla de inicio');
+      }
+      deferredInstallPrompt = null;
+    } else {
+      // Respaldo: el navegador no dio prompt nativo → instrucciones manuales
+      document.getElementById('installAndroidSteps').style.display = 'block';
+      document.getElementById('btnInstalarApp').style.display = 'none';
+      refreshIcons();
+    }
+  }
+
+  // Captura el prompt nativo de instalación (Android / Chrome / Edge)
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+  });
+
+  // Si el SO confirma la instalación, no volver a mostrar el popup
+  window.addEventListener('appinstalled', () => {
+    localStorage.setItem('pwa_instalada', '1');
+    document.getElementById('installPopup').classList.remove('show');
+    mostrarToast('¡Admin Sofy instalada correctamente!');
+  });
+
+  // Muestra el popup después de un momento (solo si no está instalada)
+  setTimeout(mostrarPopupInstalar, 2600);
 </script>
 </body>
 </html>
