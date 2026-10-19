@@ -1,47 +1,61 @@
-const CACHE_NAME = 'admin-pwa-v1';
-const ASSETS_TO_CACHE = [
+/* Service Worker - Administrador General Sofy App v2 */
+const CACHE_NAME = 'admin-sofy-v2';
+const ESTATICOS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
 ];
-// Evento de instalación: guarda los archivos esenciales en la memoria caché
+
+/* Instalación: precarga los archivos base */
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(ESTATICOS))
+      .catch((err) => console.warn('Precarga parcial del caché:', err))
+  );
 });
 
-// Evento de activación: elimina versiones antiguas de la caché si actualizas la PWA
+/* Activación: limpia cachés viejos */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys().then((nombres) =>
+      Promise.all(
+        nombres.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))
+      )
+    ).then(() => clients.claim())
   );
-  self.clients.claim();
 });
 
-// Evento fetch: intenta obtener los datos de la red primero, y si no hay internet, recurre a la caché
+/* Fetch:
+   - Peticiones a Supabase (API/Storage): SIEMPRE red (datos frescos, nunca caché)
+   - Resto (GET): red primero, caché como respaldo offline */
 self.addEventListener('fetch', (event) => {
-  // Ignorar peticiones que no sean GET o que sean hacia la API de Supabase para tener datos siempre actualizados
-  if (event.request.method !== 'GET' || event.request.url.includes('supabase.co')) {
+  if (event.request.method !== 'GET') return;
+
+  const url = event.request.url;
+  if (url.includes('supabase.co')) {
+    event.respondWith(fetch(event.request));
     return;
   }
 
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.ok && url.startsWith(self.location.origin)) {
+          const copia = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copia)).catch(() => {});
+        }
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then((r) => {
+          if (r) return r;
+          if (event.request.mode === 'navigate') return caches.match('./index.html');
+          return Response.error();
+        })
+      )
   );
 });
