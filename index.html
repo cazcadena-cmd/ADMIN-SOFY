@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administrador General - Supabase</title>
- <!-- Meta etiquetas para vista previa en WhatsApp / Redes Sociales -->
+  <!-- Meta etiquetas para vista previa en WhatsApp / Redes Sociales -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Administrador General - Sofy App">
   <meta property="og:description" content="Panel de administración.">
@@ -18,7 +18,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="#134989">
   <!-- Vinculo al archivo Manifest PWA -->
   <link rel="manifest" href="./manifest.json">
-  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23134989'/><text x='50' y='66' font-size='52' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>S</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --primary: #134989;
@@ -27,81 +32,195 @@
       --success: #28a745;
       --bg: #f4f6f8;
       --text: #333;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(16, 42, 84, 0.08);
     }
 
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { margin: 20px; background-color: var(--bg); color: var(--text); }
-    h1 { color: var(--primary); margin-bottom: 20px; font-size: 24px; }
-    
-    /* Pestañas */
-    .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--secondary); }
-    .tab-btn { padding: 12px 24px; background: #e0e0e0; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; color: #555; transition: 0.3s; }
-    .tab-btn:hover { background: #d0d0d0; }
-    .tab-btn.active { background: var(--secondary); color: white; }
+    * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; padding: 22px; background: radial-gradient(1200px 500px at 80% -10%, #e8eefb 0%, var(--bg) 55%); color: var(--text); min-height: 100vh; }
+    .page { max-width: 1280px; margin: 0 auto; }
+    h1 { color: var(--primary); margin-bottom: 6px; font-size: 24px; }
+    svg.lucide { width: 16px; height: 16px; stroke-width: 2.2; flex-shrink: 0; }
+
+    /* ===== Encabezado ===== */
+    .topbar { position: relative; overflow: hidden; background: linear-gradient(130deg, #0b2a55 0%, var(--primary) 55%, #1d6cae 120%); color: #fff; border-radius: 18px; padding: 26px 28px; margin-bottom: 18px; box-shadow: 0 18px 40px rgba(11, 42, 85, 0.28); }
+    .topbar::before { content: ""; position: absolute; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 65%); top: -140px; right: -60px; pointer-events: none; }
+    .topbar::after { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 50%; border: 40px solid rgba(255,255,255,0.05); bottom: -130px; left: 12%; pointer-events: none; }
+    .topbar h1 { color: #fff; font-size: 22px; letter-spacing: -0.3px; margin: 0 0 4px; font-weight: 800; }
+    .topbar p { margin: 0 0 16px; font-size: 13px; opacity: 0.85; position: relative; }
+    .stats { display: flex; gap: 10px; flex-wrap: wrap; position: relative; }
+    .stat-chip { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(6px); padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .stat-chip strong { font-weight: 800; font-size: 15px; }
+    .stat-chip svg.lucide { width: 14px; height: 14px; opacity: .9; }
+
+    /* ===== Pestañas ===== */
+    .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--secondary); flex-wrap: wrap; }
+    .tab-btn { padding: 12px 20px; background: #e0e4ea; border: none; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: 700; color: #55606e; transition: 0.25s; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; letter-spacing: .2px; }
+    .tab-btn:hover { background: #d3dae3; transform: translateY(-1px); }
+    .tab-btn.active { background: var(--secondary); color: white; box-shadow: 0 -6px 18px rgba(39, 92, 152, 0.35); }
 
     .tab-content { display: none; animation: fadeIn 0.4s; }
     .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
-    /* Botones */
-    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    /* ===== Botones ===== */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
     button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 13px; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-primary { background-color: var(--primary); color: white; }
-    .btn-primary:hover:not(:disabled) { background-color: #0f386b; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background-color: var(--primary); color: white; box-shadow: 0 6px 16px rgba(19, 73, 137, 0.25); }
+    .btn-primary:hover:not(:disabled) { background-color: #0f386b; transform: translateY(-1px); }
     .btn-danger { background-color: var(--danger); color: white; }
-    .btn-danger:hover { background-color: #c9302c; }
+    .btn-danger:hover:not(:disabled) { background-color: #c9302c; transform: translateY(-1px); }
     .btn-secondary { background-color: #6c757d; color: white; }
-    .btn-secondary:hover { background-color: #5a6268; }
-    
-    /* Tablas */
-    .table-container { background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-radius: 8px; overflow-x: auto; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; min-width: 800px; }
-    th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: middle; }
-    th { background-color: var(--secondary); color: white; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
-    tr:hover { background-color: #f9fbfd; }
-    
-    img.thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
-    a.media-link { font-size: 12px; color: var(--primary); font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
-    a.media-link:hover { text-decoration: underline; }
+    .btn-secondary:hover:not(:disabled) { background-color: #5a6268; transform: translateY(-1px); }
+    .btn-primary, .btn-danger, .btn-secondary { display: inline-flex; align-items: center; gap: 7px; border-radius: 8px; }
+    .btn-icon { width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; }
 
-    /* Modal / Formulario */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
-    .modal { background: white; padding: 30px; border-radius: 12px; width: 95%; max-width: 750px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    .modal h2 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-    
+    /* ===== Tablas ===== */
+    .table-container { background: white; box-shadow: var(--shadow); border-radius: var(--radius); overflow: auto; margin-bottom: 20px; border: 1px solid #eef1f6; }
+    table { width: 100%; border-collapse: collapse; min-width: 850px; }
+    th, td { padding: 12px 15px; border-bottom: 1px solid #eef0f4; text-align: left; font-size: 14px; vertical-align: middle; }
+    thead th { background-color: var(--secondary); color: white; text-transform: uppercase; font-size: 11px; letter-spacing: 0.7px; position: sticky; top: 0; z-index: 2; }
+    tbody tr { transition: background .15s; }
+    tr:hover { background-color: #f6f9fd; }
+
+    img.thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; border: 1px solid #dfe4ec; cursor: zoom-in; transition: transform .2s, box-shadow .2s; }
+    img.thumb:hover { transform: scale(1.08); box-shadow: 0 8px 20px rgba(16,42,84,.25); }
+    video.thumb-video { width: 90px; height: 56px; border-radius: 8px; object-fit: cover; cursor: zoom-in; border: 1px solid #dfe4ec; background: #0b1220; transition: transform .2s, box-shadow .2s; }
+    video.thumb-video:hover { transform: scale(1.06); box-shadow: 0 8px 20px rgba(16,42,84,.25); }
+    .media-cell { display: inline-flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+    .media-mini { font-size: 10.5px; color: var(--secondary); display: inline-flex; gap: 3px; align-items: center; text-decoration: none; font-weight: 700; }
+    .media-mini:hover { text-decoration: underline; }
+    .media-mini svg.lucide { width: 11px; height: 11px; }
+    .media-link { font-size: 12px; color: var(--primary); font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; background: #eaf1fa; border-radius: 8px; padding: 7px 12px; border: 1px solid #d5e3f5; }
+    a.media-link:hover, button.media-link:hover:not(:disabled) { text-decoration: none; background: #dceafa; transform: translateY(-1px); }
+
+    .dyn-cell { max-width: 230px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; letter-spacing: .5px; display: inline-block; }
+    .badge.ok { background: #e3f6ea; color: #16803a; }
+    .badge.info { background: #e8f0fc; color: #1b4f8f; }
+    .badge.danger { background: #fdeaea; color: #b33731; }
+    .badge.neutral { background: #eceff3; color: #5b6672; }
+    .fecha-txt { font-size: 12px; color: #4d5664; font-weight: 600; white-space: nowrap; }
+    .dias-txt { font-size: 11px; color: #8a93a1; }
+
+    .cell-actions { min-width: 120px; }
+    .cell-actions.wide { min-width: 210px; }
+    .cell-actions button { margin: 2px; }
+    .empty-hint { padding: 34px 22px; text-align: center; color: #7c8696; font-size: 13.5px; line-height: 1.6; }
+    .empty-hint strong { color: var(--primary); }
+
+    /* ===== Buscador y chips ===== */
+    .search-box { position: relative; }
+    .search-box input { padding: 10px 12px 10px 36px; border: 1px solid #ced4da; border-radius: 8px; font-size: 13px; width: 260px; transition: .2s; }
+    .search-box input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(19,73,137,0.12); }
+    .search-box svg.lucide { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #8a93a1; width: 15px; height: 15px; }
+    .chip { padding: 9px 15px; border-radius: 999px; background: #e7ecf3; border: 1px solid #d8e0ea; color: #42505f; font-weight: 700; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: .2s; text-transform: none; }
+    .chip:hover:not(:disabled) { background: #dae2ec; transform: translateY(-1px); }
+    .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 6px 14px rgba(19,73,137,0.3); }
+
+    /* ===== Galería Media ===== */
+    .media-ruta { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: #33415a; background: #fff; border: 1px solid #e3e8f0; padding: 8px 13px; border-radius: 8px; }
+    .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 14px; }
+    .media-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e9edf3; box-shadow: 0 6px 18px rgba(16,42,84,0.06); transition: transform .2s, box-shadow .2s; }
+    .media-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(16,42,84,0.14); }
+    .media-preview { height: 126px; background: linear-gradient(160deg, #101b30, #1a2c4d); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    .media-preview img, .media-preview video { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+    .media-preview svg.lucide { width: 34px; height: 34px; color: #8fb2dd; }
+    .media-folder { height: 126px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(160deg, #eef3fa, #dfe9f6); cursor: pointer; color: var(--primary); }
+    .media-folder svg.lucide { width: 34px; height: 34px; }
+    .media-folder span { font-size: 12px; font-weight: 800; max-width: 92%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .media-info { padding: 10px 12px 8px; }
+    .media-name { font-size: 12px; font-weight: 700; color: #2c3646; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-meta { font-size: 11px; color: #8a93a1; margin-top: 2px; }
+    .media-actions { display: flex; gap: 5px; padding: 0 10px 10px; }
+    .media-actions .btn-icon { width: 30px; height: 30px; }
+
+    /* ===== Modal / Formulario ===== */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8, 17, 34, 0.62); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal { background: white; padding: 28px 30px; border-radius: 16px; width: 95%; max-width: 750px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.28); animation: modalUp .28s cubic-bezier(.2,.9,.3,1.2); }
+    @keyframes modalUp { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+    .modal h2 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eef0f4; padding-bottom: 12px; margin-bottom: 20px; font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+
     .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #444; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(19, 73, 137, 0.1); }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 700; font-size: 12.5px; color: #3c4656; letter-spacing: .2px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 8px; font-size: 14px; transition: border-color 0.2s, box-shadow .2s; background: #fbfcfe; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(19, 73, 137, 0.12); background: #fff; }
+    .form-group input[type="file"] { border-style: dashed; background: #f6f9fd; font-size: 12.5px; }
     .form-row { display: flex; gap: 15px; }
     .form-row .form-group { flex: 1; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eef0f4; flex-wrap: wrap; }
+    .hint { font-size: 11.5px; color: #7c8696; margin-top: 5px; line-height: 1.5; }
 
-    /* Sistema de Notificaciones (Toast) */
-    #toast { visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff; text-align: center; border-radius: 8px; padding: 14px 20px; position: fixed; z-index: 2000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.4s 2.6s; }
+    /* ===== Visor (Lightbox) ===== */
+    #visorMedia { z-index: 3000; background: rgba(4, 10, 22, 0.94); flex-direction: column; }
+    #visorContenido { display: flex; align-items: center; justify-content: center; animation: visorIn .25s ease; }
+    @keyframes visorIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+    #visorContenido img, #visorContenido video { max-width: 92vw; max-height: 86vh; border-radius: 12px; box-shadow: 0 30px 90px rgba(0,0,0,0.65); background: #000; }
+    .visor-close { position: fixed; top: 18px; right: 22px; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.12); color: #fff; display: flex; align-items: center; justify-content: center; padding: 0; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.25); }
+    .visor-close:hover { background: rgba(255,255,255,0.25); transform: rotate(90deg); transition: .25s; }
+
+    /* ===== Calendario ===== */
+    .cal-resumen { background: linear-gradient(140deg, #eef4fc, #e3edfa); border: 1px solid #d4e3f6; border-radius: 12px; padding: 16px 18px; margin-bottom: 18px; }
+    .cal-resumen .titulo { font-weight: 800; color: var(--primary); font-size: 15px; margin-bottom: 6px; }
+    .cal-resumen .rango { font-size: 13px; color: #33415a; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .cal-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cal-btn { padding: 16px 14px; border-radius: 12px; font-size: 13.5px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+    .cal-btn svg.lucide { width: 22px; height: 22px; }
+    .cal-btn small { font-weight: 500; opacity: .85; font-size: 11px; }
+    .cal-google { background: #fff; color: #1a4b8f; border: 2px solid var(--primary); }
+    .cal-google:hover:not(:disabled) { background: #eef4fc; }
+    .cal-ics { background: var(--primary); color: #fff; }
+    .cal-ics:hover:not(:disabled) { background: #0f386b; }
+
+    /* ===== Sistema de Notificaciones (Toast) ===== */
+    #toast { visibility: hidden; min-width: 260px; max-width: 90vw; background-color: var(--success); color: #fff; text-align: center; border-radius: 10px; padding: 14px 20px; position: fixed; z-index: 4000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13.5px; font-weight: bold; box-shadow: 0 10px 26px rgba(0,0,0,0.22); }
+    #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.4s 3.4s; }
     @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
     @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+    @media (max-width: 760px) {
+      body { padding: 12px; }
+      .form-row { flex-direction: column; gap: 0; }
+      .cal-botones { grid-template-columns: 1fr; }
+      .topbar { padding: 20px; }
+      .search-box input { width: 100%; }
+      .search-box { width: 100%; }
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
+<div class="page">
 
-  <h1>Administrador de Comercios, Hero Slider / Videos y Productos</h1>
+  <!-- ===== ENCABEZADO ===== -->
+  <header class="topbar">
+    <h1>Administrador de Comercios, Hero Slider / Videos y Productos</h1>
+    <p>Panel general conectado a Supabase — Comercios, productos, banners, hero slider, perfiles y archivos multimedia.</p>
+    <div class="stats">
+      <span class="stat-chip"><i data-lucide="store"></i><strong id="stat-comercios">0</strong> Comercios</span>
+      <span class="stat-chip"><i data-lucide="package"></i><strong id="stat-productos">0</strong> Productos</span>
+      <span class="stat-chip"><i data-lucide="film"></i><strong id="stat-videos">0</strong> Videos Hero</span>
+      <span class="stat-chip"><i data-lucide="users"></i><strong id="stat-perfiles">0</strong> Perfiles</span>
+    </div>
+  </header>
 
-  <!-- Pestañas -->
+  <!-- ===== PESTAÑAS ===== -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="cambiarTab('comercios')">🏪 Comercios</button>
-    <button class="tab-btn" onclick="cambiarTab('productos')">📦 Productos</button>
-    <button class="tab-btn" onclick="cambiarTab('banners')">🎬 Hero Slider / Videos</button>
+    <button class="tab-btn active" onclick="cambiarTab('comercios', this)"><i data-lucide="store"></i>Comercios</button>
+    <button class="tab-btn" onclick="cambiarTab('productos', this)"><i data-lucide="package"></i>Productos</button>
+    <button class="tab-btn" onclick="cambiarTab('banners', this)"><i data-lucide="images"></i>Banners Slider</button>
+    <button class="tab-btn" onclick="cambiarTab('herovideos', this)"><i data-lucide="film"></i>Hero Videos</button>
+    <button class="tab-btn" onclick="cambiarTab('perfiles', this)"><i data-lucide="users"></i>Perfiles</button>
+    <button class="tab-btn" onclick="cambiarTab('media', this)"><i data-lucide="folder-open"></i>Media</button>
   </div>
 
   <!-- TAB COMERCIOS -->
   <div id="tab-comercios" class="tab-content active">
     <div class="toolbar">
-      <button class="btn-primary" onclick="abrirModalComercio()">➕ Nuevo Comercio</button>
+      <button class="btn-primary" onclick="abrirModalComercio()"><i data-lucide="plus"></i>Nuevo Comercio</button>
     </div>
     <div class="table-container" id="tabla-comercios">
       <p style="padding: 20px;">Cargando comercios...</p>
@@ -111,547 +230,1752 @@
   <!-- TAB PRODUCTOS -->
   <div id="tab-productos" class="tab-content">
     <div class="toolbar">
-      <button class="btn-primary" onclick="abrirModalProducto()">➕ Nuevo Producto</button>
+      <button class="btn-primary" onclick="abrirModalProducto()"><i data-lucide="plus"></i>Nuevo Producto</button>
     </div>
     <div class="table-container" id="tabla-productos">
       <p style="padding: 20px;">Cargando productos...</p>
     </div>
   </div>
 
-  <!-- TAB BANNERS / HERO SLIDER -->
+  <!-- TAB BANNERS: SOLO media de las tiendas de los comercios -->
   <div id="tab-banners" class="tab-content">
     <div class="toolbar">
-      <button class="btn-primary" onclick="abrirModalBanner()">➕ Nuevo Video / Banner para Slider</button>
+      <button class="btn-primary" onclick="abrirModalBanner()"><i data-lucide="plus"></i>Nueva Imagen / Video de Comercio</button>
+      <span class="hint">Aquí solo aparece lo que los <strong>comercios</strong> suben a sus tiendas. Los videos globales del Hero Slider están en la pestaña <strong>Hero Videos</strong>.</span>
     </div>
     <div class="table-container" id="tabla-banners">
       <p style="padding: 20px;">Cargando elementos del slider...</p>
     </div>
   </div>
 
-  <!-- MODAL COMERCIO -->
-  <div class="modal-overlay" id="modalComercio">
-    <div class="modal">
-      <h2 id="modalComercioTitle">Gestión de Comercio</h2>
-      <form id="formComercio" onsubmit="guardarComercio(event)">
-        <input type="hidden" id="shop_id">
-        <div class="form-row">
-          <div class="form-group"><label>ID del Negocio (business_id) *</label><input type="text" id="shop_business_id" required></div>
-          <div class="form-group"><label>Nombre del Comercio *</label><input type="text" id="shop_name" required></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Categoría</label><input type="text" id="shop_category"></div>
-          <div class="form-group"><label>WhatsApp</label><input type="text" id="shop_whatsapp"></div>
-        </div>
-        <div class="form-group"><label>Descripción</label><textarea id="shop_description" rows="3"></textarea></div>
-        <div class="form-row">
-          <div class="form-group"><label>Dirección</label><input type="text" id="shop_address"></div>
-          <div class="form-group"><label>Horario</label><input type="text" id="shop_schedule"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Subir Logo (Bucket: logos)</label><input type="file" id="file_logo" accept="image/*"></div>
-          <div class="form-group"><label>Subir Portada (Bucket: logos)</label><input type="file" id="file_cover_image" accept="image/*"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Subir Video (Bucket: videos)</label><input type="file" id="file_video" accept="video/*"></div>
-          <div class="form-group"><label>URL de Video Externo / YouTube</label><input type="url" id="shop_video_url"></div>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
-          <button type="submit" class="btn-primary" id="btnGuardarComercio">Guardar Comercio</button>
-        </div>
-      </form>
+  <!-- TAB HERO VIDEOS (NUEVO: programación con fechas) -->
+  <div id="tab-herovideos" class="tab-content">
+    <div class="toolbar">
+      <button class="btn-primary" onclick="abrirModalHeroVideo(null)"><i data-lucide="plus"></i>Nuevo Video Programado</button>
+      <button class="btn-danger" onclick="limpiarVideosExpirados()"><i data-lucide="calendar-x"></i>Limpiar expirados</button>
+      <span class="hint">Define <strong>fecha de inicio y fin</strong> para cada video del Hero Slider y guárdalo en tu calendario (Google o iPhone) para recibir el recordatorio.</span>
+    </div>
+    <div class="table-container" id="tabla-herovideos">
+      <p style="padding: 20px;">Cargando videos del hero slider...</p>
     </div>
   </div>
 
-  <!-- MODAL PRODUCTO -->
-  <div class="modal-overlay" id="modalProducto">
-    <div class="modal">
-      <h2 id="modalProductoTitle">Gestión de Producto</h2>
-      <form id="formProducto" onsubmit="guardarProducto(event)">
-        <input type="hidden" id="product_id">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Comercio Asociado (business_id) *</label>
-            <select id="prod_business_id" required></select>
-          </div>
-          <div class="form-group"><label>Nombre del Producto *</label><input type="text" id="prod_name" required></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod_price"></div>
-          <div class="form-group"><label>Categoría</label><input type="text" id="prod_category"></div>
-        </div>
-        <div class="form-group"><label>Descripción</label><textarea id="prod_description" rows="3"></textarea></div>
-        <div class="form-group"><label>Subir Imagen del Producto (Bucket: logos)</label><input type="file" id="prod_file" accept="image/*"></div>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
-          <button type="submit" class="btn-primary" id="btnGuardarProducto">Guardar Producto</button>
-        </div>
-      </form>
+  <!-- TAB PERFILES (NUEVO) -->
+  <div id="tab-perfiles" class="tab-content">
+    <div class="toolbar">
+      <div class="search-box">
+        <i data-lucide="search"></i>
+        <input type="text" id="perfil_buscar" placeholder="Buscar por nombre, correo, teléfono..." oninput="filtrarPerfiles()">
+      </div>
+      <button class="btn-secondary" onclick="cargarPerfiles()"><i data-lucide="refresh-ccw"></i>Recargar</button>
+    </div>
+    <div class="table-container" id="tabla-perfiles">
+      <p style="padding: 20px;">Cargando perfiles...</p>
     </div>
   </div>
 
-  <!-- MODAL BANNER / HERO SLIDER -->
-  <div class="modal-overlay" id="modalBanner">
-    <div class="modal">
-      <h2 id="modalBannerTitle">Gestión de Video / Banner Hero Slider</h2>
-      <form id="formBanner" onsubmit="guardarBanner(event)">
-        <input type="hidden" id="banner_id">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Comercio Asociado (Opcional)</label>
-            <select id="banner_business_id"></select>
-          </div>
-          <div class="form-group"><label>Título o Descripción del Video/Banner</label><input type="text" id="banner_title" placeholder="Ej: Video Promocional 1"></div>
-        </div>
+  <!-- TAB MEDIA (NUEVO: Supabase Storage) -->
+  <div id="tab-media" class="tab-content">
+    <div class="toolbar">
+      <div id="media-chips" style="display:contents;">
+        <button class="chip active" data-bucket="logos" onclick="setBucket('logos')"><i data-lucide="image"></i>logos</button>
+      </div>
+      <input type="text" id="media_bucket_custom" placeholder="otro bucket..." style="padding:9px 12px;border:1px solid #ced4da;border-radius:8px;font-size:12.5px;width:120px;">
+      <button class="chip" onclick="setBucket(document.getElementById('media_bucket_custom').value.trim())"><i data-lucide="corner-down-left"></i>Ir</button>
+      <span class="media-ruta"><i data-lucide="hard-drive"></i><span id="media-ruta">/</span></span>
+      <button class="btn-secondary btn-icon" onclick="subirNivel()" title="Subir un nivel"><i data-lucide="arrow-up"></i></button>
+      <button class="btn-secondary btn-icon" onclick="cargarMedia()" title="Recargar"><i data-lucide="refresh-ccw"></i></button>
+      <button class="btn-primary" onclick="document.getElementById('media_subir_file').click()"><i data-lucide="upload"></i>Subir archivos</button>
+      <input type="file" id="media_subir_file" multiple style="display:none" onchange="mediaSubir(this)">
+      <input type="file" id="media_reemplazar_file" style="display:none" onchange="procesarReemplazo(this)">
+    </div>
+    <div class="media-grid" id="media-grid">
+      <p class="empty-hint">Abre esta pestaña para explorar los archivos del Storage.</p>
+    </div>
+    <p class="hint" style="margin-top:12px;">Los archivos se administran directamente en Supabase Storage: ver, reemplazar, renombrar, descargar y eliminar afecta al bucket real.</p>
+  </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Subir Archivo Video MP4 (Bucket: videos)</label>
-            <input type="file" id="banner_video_file" accept="video/*">
-          </div>
-          <div class="form-group">
-            <label>O Pegar URL Directa de Video MP4 (ej: Imgur)</label>
-            <input type="url" id="banner_video_url" placeholder="https://i.imgur.com/pwQfKed.mp4">
-          </div>
-        </div>
+</div>
 
+<!-- MODAL COMERCIO (ORIGINAL) -->
+<div class="modal-overlay" id="modalComercio">
+  <div class="modal">
+    <h2 id="modalComercioTitle">Gestión de Comercio</h2>
+    <form id="formComercio" onsubmit="guardarComercio(event)">
+      <input type="hidden" id="shop_id">
+      <div class="form-row">
+        <div class="form-group"><label>ID del Negocio (business_id) *</label><input type="text" id="shop_business_id" required></div>
+        <div class="form-group"><label>Nombre del Comercio *</label><input type="text" id="shop_name" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Categoría</label><input type="text" id="shop_category"></div>
+        <div class="form-group"><label>WhatsApp</label><input type="text" id="shop_whatsapp"></div>
+      </div>
+      <div class="form-group"><label>Descripción</label><textarea id="shop_description" rows="3"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Dirección</label><input type="text" id="shop_address"></div>
+        <div class="form-group"><label>Horario</label><input type="text" id="shop_schedule"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Subir Logo (Bucket: logos)</label><input type="file" id="file_logo" accept="image/*"></div>
+        <div class="form-group"><label>Subir Portada (Bucket: logos)</label><input type="file" id="file_cover_image" accept="image/*"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Subir Video (Bucket: videos)</label><input type="file" id="file_video" accept="video/*"></div>
+        <div class="form-group"><label>URL de Video Externo / YouTube</label><input type="url" id="shop_video_url"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarComercio">Guardar Comercio</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL PRODUCTO (ORIGINAL) -->
+<div class="modal-overlay" id="modalProducto">
+  <div class="modal">
+    <h2 id="modalProductoTitle">Gestión de Producto</h2>
+    <form id="formProducto" onsubmit="guardarProducto(event)">
+      <input type="hidden" id="product_id">
+      <div class="form-row">
         <div class="form-group">
-          <label>O Subir Imagen Estática (Si no es video)</label>
-          <input type="file" id="banner_file" accept="image/*">
+          <label>Comercio Asociado (business_id) *</label>
+          <select id="prod_business_id" required></select>
         </div>
+        <div class="form-group"><label>Nombre del Producto *</label><input type="text" id="prod_name" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Precio</label><input type="number" step="0.01" id="prod_price"></div>
+        <div class="form-group"><label>Categoría</label><input type="text" id="prod_category"></div>
+      </div>
+      <div class="form-group"><label>Descripción</label><textarea id="prod_description" rows="3"></textarea></div>
+      <div class="form-group"><label>Subir Imagen del Producto (Bucket: logos)</label><input type="file" id="prod_file" accept="image/*"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarProducto">Guardar Producto</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
-          <button type="submit" class="btn-primary" id="btnGuardarBanner">Guardar en Slider</button>
+<!-- MODAL BANNER / HERO SLIDER (ORIGINAL) -->
+<div class="modal-overlay" id="modalBanner">
+  <div class="modal">
+    <h2 id="modalBannerTitle">Gestión de Video / Banner Hero Slider</h2>
+    <form id="formBanner" onsubmit="guardarBanner(event)">
+      <input type="hidden" id="banner_id">
+      <input type="hidden" id="banner_tabla">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Comercio dueño de esta media *</label>
+          <select id="banner_business_id" required></select>
+          <p class="hint">Esta sección es solo para la media de las tiendas. Si es contenido GLOBAL del Hero Slider, usa la pestaña <strong>Hero Videos</strong>.</p>
         </div>
-      </form>
+        <div class="form-group"><label>Título o Descripción del Video/Banner</label><input type="text" id="banner_title" placeholder="Ej: Video Promocional 1"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Subir Archivo Video MP4 (Bucket: videos)</label>
+          <input type="file" id="banner_video_file" accept="video/*">
+        </div>
+        <div class="form-group">
+          <label>O Pegar URL Directa de Video MP4 (ej: Imgur)</label>
+          <input type="url" id="banner_video_url" placeholder="https://i.imgur.com/pwQfKed.mp4">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>O Subir Imagen Estática (Si no es video)</label>
+        <input type="file" id="banner_file" accept="image/*">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarBanner">Guardar en Slider</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL HERO VIDEO PROGRAMADO (NUEVO) -->
+<div class="modal-overlay" id="modalHeroVideo">
+  <div class="modal">
+    <h2 id="modalHeroVideoTitle"><i data-lucide="film"></i>Video Programado del Hero Slider</h2>
+    <form id="formHeroVideo" onsubmit="guardarHeroVideo(event)">
+      <input type="hidden" id="hvideo_idx">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Destino</label>
+          <div class="media-ruta" style="width:100%;"><i data-lucide="globe"></i>HERO SLIDER PRINCIPAL (Global / Inicio)</div>
+          <select id="hvideo_business_id" style="display:none;"></select>
+          <p class="hint">Los videos del Hero Slider siempre son globales. La media de una tienda se sube en la pestaña <strong>Banners Slider</strong>.</p>
+        </div>
+        <div class="form-group"><label>Título del Video</label><input type="text" id="hvideo_title" placeholder="Ej: Promo Navidad 2026"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de inicio (desde cuándo se muestra)</label>
+          <input type="date" id="hvideo_start">
+        </div>
+        <div class="form-group">
+          <label>Fecha de fin (hasta cuándo se muestra)</label>
+          <input type="date" id="hvideo_end">
+          <p class="hint">Ese rango es el tiempo que durará el video en el Hero Slider. Al guardar podrás añadirlo a tu calendario.</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Subir Video MP4 (Bucket: videos)</label>
+          <input type="file" id="hvideo_video_file" accept="video/*">
+        </div>
+        <div class="form-group">
+          <label>O URL Directa de Video MP4</label>
+          <input type="url" id="hvideo_video_url" placeholder="https://i.imgur.com/pwQfKed.mp4">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Imagen de portada / poster (opcional, Bucket: logos)</label>
+        <input type="file" id="hvideo_img_file" accept="image/*">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarHeroVideo">Guardar Video Programado</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL PERFIL (NUEVO: dinámico según columnas reales) -->
+<div class="modal-overlay" id="modalPerfil">
+  <div class="modal">
+    <h2 id="modalPerfilTitle"><i data-lucide="user"></i>Editar Perfil</h2>
+    <form id="formPerfil" onsubmit="guardarPerfil(event)">
+      <input type="hidden" id="perfil_idx">
+      <div id="perfil_campos"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="cerrarModales()">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnGuardarPerfil">Guardar Perfil</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CALENDARIO (NUEVO) -->
+<div class="modal-overlay" id="modalCalendario">
+  <div class="modal" style="max-width: 520px;">
+    <h2><i data-lucide="calendar-plus"></i>Guardar en el Calendario</h2>
+    <div class="cal-resumen">
+      <div class="titulo" id="cal_titulo">Video del Hero Slider</div>
+      <div class="rango"><i data-lucide="calendar-clock"></i><span id="cal_rango">—</span></div>
+      <p class="hint" style="margin-top:8px;">El evento incluirá una alarma el día de inicio. No es posible escribir en tu calendario sin tu permiso, así que elige una opción:</p>
+    </div>
+    <div class="cal-botones">
+      <button type="button" class="cal-btn cal-google" onclick="abrirGoogleCalendario()">
+        <i data-lucide="calendar-plus"></i>
+        Google Calendar
+        <small>Se abre con todo llenado, solo pulsa "Guardar"</small>
+      </button>
+      <button type="button" class="cal-btn cal-ics" onclick="descargarICS()">
+        <i data-lucide="download"></i>
+        iPhone / Apple Calendar
+        <small>Descarga un archivo .ics: ábrelo y se añade solo</small>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="cerrarModales()">Cerrar</button>
     </div>
   </div>
+</div>
 
-  <!-- Contenedor Toast -->
-  <div id="toast">Notificación</div>
+<!-- VISOR DE MEDIA (NUEVO) -->
+<div class="modal-overlay" id="visorMedia" onclick="if(event.target===this)cerrarVisor()">
+  <button class="visor-close" onclick="cerrarVisor()" title="Cerrar"><i data-lucide="x"></i></button>
+  <div id="visorContenido"></div>
+</div>
 
-  <script>
-    const SUPABASE_URL = 'https://jpukgeomsmwyxtqnpcsd.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWtnZW9tc213eXh0cW5wY3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDA3MzQsImV4cCI6MjEwNDU3NjczNH0.aALmQGfEkU4YCJM_9yUGJoUYfFVSLaZe0tnOlznKm54';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<!-- Contenedor Toast -->
+<div id="toast">Notificación</div>
 
-    let listShops = [], listProducts = [], listBanners = [];
+<script>
+  /* ================= CONFIGURACIÓN SUPABASE (ORIGINAL) ================= */
+  const SUPABASE_URL = 'https://jpukgeomsmwyxtqnpcsd.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdWtnZW9tc213eXh0cW5wY3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMDA3MzQsImV4cCI6MjEwNDU3NjczNH0.aALmQGfEkU4YCJM_9yUGJoUYfFVSLaZe0tnOlznKm54';
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    document.addEventListener('DOMContentLoaded', () => {
-      cargarTodo();
-      
-      // REGISTRAR SERVICE WORKER
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker registrado con éxito', reg))
-          .catch(err => console.error('Error registrando Service Worker', err));
+  let listShops = [], listProducts = [], listBanners = [];
+
+  /* ================= ESTADOS NUEVOS ================= */
+  let listHeroVideos = [];
+  let listProfiles = [];
+  let listProfilesFiltrados = [];
+  let profileTable = null;
+  let profileColumns = [];
+  let videoCalendarioActual = null;
+  let mediaEstado = { bucket: 'logos', path: '', items: [], abierto: false, v: Date.now() };
+  let mediaReemplazarIdx = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarTodo();
+    refreshIcons();
+
+    // REGISTRAR SERVICE WORKER
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker registrado con éxito', reg))
+        .catch(err => console.error('Error registrando Service Worker', err));
+    }
+
+    // ESC cierra el visor
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarVisor(); });
+  });
+
+  function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+
+  function mostrarToast(mensaje, esError = false) {
+    const toast = document.getElementById("toast");
+    toast.innerText = mensaje;
+    toast.style.backgroundColor = esError ? "var(--danger)" : "var(--success)";
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3800);
+  }
+
+  function actualizarStats() {
+    document.getElementById('stat-comercios').innerText = listShops.length;
+    document.getElementById('stat-productos').innerText = listProducts.length;
+    document.getElementById('stat-videos').innerText = listHeroVideos.length;
+    document.getElementById('stat-perfiles').innerText = listProfiles.length;
+  }
+
+  async function cargarTodo() {
+    await Promise.all([cargarComercios(), cargarProductos(), cargarBanners(), cargarHeroVideos(), cargarPerfiles()]);
+    actualizarSelectsNegocios();
+    actualizarStats();
+    refreshIcons();
+  }
+
+  function cambiarTab(tabName, el) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    const btn = el || (window.event && window.event.target && window.event.target.closest('.tab-btn'));
+    if (btn) btn.classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+
+    // Carga perezosa del Storage al entrar a Media por primera vez
+    if (tabName === 'media' && !mediaEstado.abierto) {
+      mediaEstado.abierto = true;
+      descubrirBuckets().then(() => cargarMedia());
+    }
+    refreshIcons();
+  }
+
+  /* ================= VISOR DE MEDIA (NUEVO) ================= */
+  function abrirVisor(url, tipo) {
+    if (!url) return;
+    const cont = document.getElementById('visorContenido');
+    if (tipo === 'video') {
+      cont.innerHTML = `<video src="${url}" controls autoplay loop playsinline></video>`;
+    } else {
+      cont.innerHTML = `<img src="${url}" alt="Vista previa">`;
+    }
+    document.getElementById('visorMedia').style.display = 'flex';
+    refreshIcons();
+  }
+
+  function cerrarVisor() {
+    const visor = document.getElementById('visorMedia');
+    if (visor) visor.style.display = 'none';
+    const cont = document.getElementById('visorContenido');
+    if (cont) cont.innerHTML = ''; // detiene la reproducción de video
+  }
+
+  /* ================= PREVIEWS ROBUSTAS DE MEDIA =================
+     Si la miniatura no carga (bucket privado, URL rota, etc.), se muestra
+     siempre un enlace "abrir" — nunca una fila vacía o "una línea". */
+  function imgThumbRobusta(url) {
+    if (!url) return '—';
+    const safe = String(url).replace(/"/g, '&quot;');
+    return `<span class="media-cell">
+      <img src="${safe}" class="thumb" title="Clic para ver grande" loading="lazy" data-url="${safe}" onclick="abrirVisor(this.dataset.url,'imagen')" onerror="this.style.display='none'">
+      <a class="media-mini" href="${safe}" target="_blank" rel="noopener" title="${safe}"><i data-lucide="external-link"></i>abrir</a>
+    </span>`;
+  }
+
+  function videoPreviewRobusta(url) {
+    if (!url) return '—';
+    const safe = String(url).replace(/"/g, '&quot;');
+    return `<span class="media-cell">
+      <video src="${safe}" class="thumb-video" title="Clic para ver grande" muted loop playsinline preload="metadata" data-url="${safe}" onclick="abrirVisor(this.dataset.url,'video')" onerror="this.style.display='none'"></video>
+      <a class="media-mini" href="${safe}" target="_blank" rel="noopener" title="${safe}"><i data-lucide="external-link"></i>abrir</a>
+    </span>`;
+  }
+
+  // Localiza la media de una fila sin importar el nombre real de la columna
+  function mediaDeFila(row) {
+    const video = row.video_url || row.video || row.cover_video || row.media_video || null;
+    const imagen = row.image_url || row.imagen || row.image || row.cover || row.media_url || null;
+    return { video, imagen };
+  }
+
+  /* ============ SOPORTE MULTI-TABLA (banner_videos + shop_banners) ============
+     La app real puede guardar la media en "banner_videos" en vez de
+     "shop_banners". El panel detecta ambas tablas y las administra unificadas. */
+  let tablaExtraMedia = null;       // false si no existe, 'banner_videos' si existe
+  let columnasExtraMedia = [];      // columnas detectadas de la tabla extra
+  const TABLA_EXTRA = 'banner_videos';
+  // Columnas estándar que el BLOQUE 3 del SQL garantiza (por si la tabla está vacía)
+  const COLS_ESTANDAR = ['id', 'title', 'business_id', 'video_url', 'image_url', 'order_index', 'start_date', 'end_date', 'created_at'];
+
+  const MAPA_CAMPOS = {
+    id:      ['id', 'banner_id', 'video_id', 'uid'],
+    titulo:  ['title', 'titulo', 'nombre', 'name'],
+    negocio: ['business_id', 'shop_id', 'negocio_id', 'comercio_id', 'store_id'],
+    video:   ['video_url', 'video', 'mp4', 'url_video', 'video_link'],
+    imagen:  ['image_url', 'imagen', 'image', 'portada', 'cover', 'img_url'],
+    orden:   ['order_index', 'posicion', 'orden', 'position', 'orden_index'],
+    inicio:  ['start_date', 'fecha_inicio', 'inicio'],
+    fin:     ['end_date', 'fecha_fin', 'fin']
+  };
+
+  function colReal(columnas, campo) {
+    return MAPA_CAMPOS[campo].find(c => columnas.includes(c)) || null;
+  }
+
+  async function detectarTablaExtra() {
+    if (tablaExtraMedia !== null) return tablaExtraMedia;
+    try {
+      const { data, error } = await supabaseClient.from(TABLA_EXTRA).select('*').limit(50);
+      if (error) { tablaExtraMedia = false; return false; }
+      tablaExtraMedia = TABLA_EXTRA;
+      columnasExtraMedia = (data && data.length)
+        ? [...new Set(data.flatMap(r => Object.keys(r)))]
+        : COLS_ESTANDAR.slice();
+      return tablaExtraMedia;
+    } catch (e) { tablaExtraMedia = false; return false; }
+  }
+
+  // Convierte una fila de banner_videos a campos normalizados
+  function normalizarFila(row, columnas) {
+    const get = (campo) => { const c = colReal(columnas, campo); return (c && row[c] !== undefined && row[c] !== null) ? row[c] : null; };
+    return {
+      _id: get('id'), negocio: get('negocio') || '', titulo: get('titulo') || '',
+      video: get('video'), imagen: get('imagen'),
+      orden: get('orden'), inicio: get('inicio'), fin: get('fin')
+    };
+  }
+
+  // Normaliza filas de shop_banners (columnas conocidas)
+  function normShop(b) {
+    return {
+      _id: b.id, negocio: b.business_id || '', titulo: b.title || '',
+      video: b.video_url || null, imagen: b.image_url || null,
+      orden: (b.order_index !== undefined ? b.order_index : null),
+      inicio: b.start_date || null, fin: b.end_date || null
+    };
+  }
+
+  // Columna PK real de la fila según su tabla de origen
+  function pkDeFila(fila) {
+    if (fila._tabla === 'shop_banners') return 'id';
+    return colReal(columnasExtraMedia, 'id') || 'id';
+  }
+
+  // Construye payload SOLO con columnas reales de la tabla destino
+  function payloadPara(columnas, valores) {
+    const out = {};
+    for (const campo of ['titulo', 'negocio', 'video', 'imagen', 'orden', 'inicio', 'fin']) {
+      if (valores[campo] === undefined) continue;
+      const col = colReal(columnas, campo);
+      if (col) out[col] = valores[campo];
+    }
+    return out;
+  }
+
+  /* ================= COMERCIOS (ORIGINAL + visor) ================= */
+  async function cargarComercios() {
+    const { data, error } = await supabaseClient.from('shops').select('*').order('id', { ascending: false });
+    if (error) return mostrarToast('Error cargando comercios: ' + error.message, true);
+    listShops = data || [];
+
+    if (!listShops.length) {
+      document.getElementById('tabla-comercios').innerHTML = `<p class="empty-hint">Todavía no hay comercios. Crea el primero con el botón <strong>+ Nuevo Comercio</strong>.</p>`;
+      actualizarStats(); return;
+    }
+
+    let html = `<table><thead><tr><th>ID / BusinessID</th><th>Logo</th><th>Nombre</th><th>Categoría</th><th>Portada</th><th>Video</th><th>Acciones</th></tr></thead><tbody>`;
+    listShops.forEach(c => {
+      const logo = imgThumbRobusta(c.logo);
+      const cover = imgThumbRobusta(c.cover_image);
+      const videoRef = c.video || c.video_url || c.cover_video;
+      const video = videoRef ? `<span class="media-cell"><button type="button" class="media-link" data-url="${videoRef}" onclick="abrirVisor(this.dataset.url,'video')"><i data-lucide="play"></i> Ver Video</button><a class="media-mini" href="${videoRef}" target="_blank" rel="noopener"><i data-lucide="external-link"></i>abrir</a></span>` : '—';
+
+      html += `<tr>
+        <td>#${c.id} <br><small style="color:#888;">${c.business_id || 'Sin ID'}</small></td>
+        <td>${logo}</td>
+        <td><strong>${c.name || ''}</strong></td>
+        <td>${c.category || ''}</td>
+        <td>${cover}</td>
+        <td>${video}</td>
+        <td class="cell-actions">
+          <button class="btn-primary btn-icon" title="Editar" onclick="abrirModalComercio(${c.id})"><i data-lucide="pencil"></i></button>
+          <button class="btn-danger btn-icon" title="Eliminar de Supabase" onclick="eliminarRegistro('shops', ${c.id}, cargarComercios)"><i data-lucide="trash-2"></i></button>
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('tabla-comercios').innerHTML = html;
+    actualizarSelectsNegocios();
+    actualizarStats();
+    refreshIcons();
+  }
+
+  /* ================= PRODUCTOS (ORIGINAL + visor) ================= */
+  async function cargarProductos() {
+    const { data, error } = await supabaseClient.from('shop_products').select('*').order('created_at', { ascending: false });
+    if (error) return console.error(error);
+    listProducts = data || [];
+
+    if (!listProducts.length) {
+      document.getElementById('tabla-productos').innerHTML = `<p class="empty-hint">Todavía no hay productos registrados.</p>`;
+      actualizarStats(); return;
+    }
+
+    let html = `<table><thead><tr><th>Imagen</th><th>Producto</th><th>Comercio (ID)</th><th>Precio</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>`;
+    listProducts.forEach(p => {
+      const img = imgThumbRobusta(p.image_url);
+      html += `<tr>
+        <td>${img}</td>
+        <td><strong>${p.name || ''}</strong></td>
+        <td>${p.business_id || ''}</td>
+        <td>$${p.price || 0}</td>
+        <td>${p.category || ''}</td>
+        <td class="cell-actions">
+          <button class="btn-primary btn-icon" title="Editar" onclick="abrirModalProducto('${p.id}')"><i data-lucide="pencil"></i></button>
+          <button class="btn-danger btn-icon" title="Eliminar de Supabase" onclick="eliminarRegistro('shop_products', '${p.id}', cargarProductos)"><i data-lucide="trash-2"></i></button>
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('tabla-productos').innerHTML = html;
+    actualizarStats();
+    refreshIcons();
+  }
+
+  /* ============ BANNERS: SOLO media de las tiendas de los COMERCIOS ============
+     Fusiona shop_banners + banner_videos. Lo GLOBAL vive en Hero Videos. */
+  async function cargarBanners() {
+    let rows = [];
+
+    // 1) shop_banners con comercio asignado
+    let { data, error } = await supabaseClient
+      .from('shop_banners')
+      .select('*')
+      .not('business_id', 'is', null)
+      .order('order_index', { ascending: true });
+
+    if (error) {
+      console.error('Error al cargar shop_banners:', error);
+      const fallback = await supabaseClient.from('shop_banners').select('*').not('business_id', 'is', null).order('created_at', { ascending: false });
+      data = fallback.data || [];
+    }
+    (data || []).forEach(r => rows.push({ ...r, _tabla: 'shop_banners', _norm: normShop(r) }));
+
+    // 2) banner_videos con comercio asignado (tabla que usa la app real)
+    await detectarTablaExtra();
+    if (tablaExtraMedia) {
+      const { data: bv } = await supabaseClient.from(tablaExtraMedia).select('*');
+      (bv || []).forEach(r => {
+        const n = normalizarFila(r, columnasExtraMedia);
+        if (n.negocio) rows.push({ ...r, _tabla: tablaExtraMedia, _norm: n });
+      });
+    }
+
+    listBanners = rows;
+
+    if (!listBanners.length) {
+      document.getElementById('tabla-banners').innerHTML = `<p class="empty-hint">Ningún comercio ha subido imágenes o videos para su tienda todavía.<br>El contenido <strong>global</strong> del Hero Slider se administra en la pestaña <strong>Hero Videos</strong>.</p>`;
+      refreshIcons();
+      return;
+    }
+
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>Posición</th>
+          <th>Vista Previa / Media</th>
+          <th>Título / Ref</th>
+          <th>Tipo</th>
+          <th>Origen</th>
+          <th>Comercio (ID)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    listBanners.forEach((b, index) => {
+      const n = b._norm || normShop(b);
+      const mediaPreview = n.video ? videoPreviewRobusta(n.video) : imgThumbRobusta(n.imagen);
+      const tipo = n.video ? '<span class="badge info">VIDEO</span>' : '<span class="badge neutral">IMAGEN</span>';
+      const origen = `<span class="badge neutral" style="text-transform:none;">${b._tabla}</span>`;
+      const esPrimero = index === 0;
+      const esUltimo = index === listBanners.length - 1;
+
+      html += `<tr>
+        <td><strong>#${index + 1}</strong></td>
+        <td>${mediaPreview}</td>
+        <td><strong>${n.titulo || 'Sin Título'}</strong></td>
+        <td>${tipo}</td>
+        <td>${origen}</td>
+        <td>${n.negocio || 'General / Global'}</td>
+        <td class="cell-actions wide">
+          <button class="btn-secondary btn-icon" onclick="moverBannerArriba(${index})" ${esPrimero ? 'disabled' : ''} title="Subir posición"><i data-lucide="arrow-up"></i></button>
+          <button class="btn-secondary btn-icon" onclick="moverBannerAbajo(${index})" ${esUltimo ? 'disabled' : ''} title="Bajar posición"><i data-lucide="arrow-down"></i></button>
+          <button class="btn-primary btn-icon" title="Editar" onclick="abrirModalBannerPorIndice(${index})"><i data-lucide="pencil"></i></button>
+          <button class="btn-danger btn-icon" title="Eliminar de Supabase" onclick="eliminarRegistro('${b._tabla}', '${n._id}', cargarBanners, '${pkDeFila(b)}')"><i data-lucide="trash-2"></i></button>
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    document.getElementById('tabla-banners').innerHTML = html;
+    refreshIcons();
+  }
+
+  // --- FUNCIONES PARA REORDENAR VIDEOS/BANNERS (ORIGINAL) ---
+  async function moverBannerArriba(index) {
+    if (index <= 0) return;
+    await intercambiarOrdenBanners(index, index - 1);
+  }
+
+  async function moverBannerAbajo(index) {
+    if (index >= listBanners.length - 1) return;
+    await intercambiarOrdenBanners(index, index + 1);
+  }
+
+  async function intercambiarOrdenBanners(indexA, indexB) {
+    const bannerA = listBanners[indexA];
+    const bannerB = listBanners[indexB];
+
+    const orderA = bannerA._norm.orden || (indexA + 1);
+    const orderB = bannerB._norm.orden || (indexB + 1);
+
+    // Cada fila puede venir de una tabla distinta
+    const colOrdenA = bannerA._tabla === 'shop_banners' ? 'order_index' : (colReal(columnasExtraMedia, 'orden') || 'order_index');
+    const colOrdenB = bannerB._tabla === 'shop_banners' ? 'order_index' : (colReal(columnasExtraMedia, 'orden') || 'order_index');
+
+    const { error: errA } = await supabaseClient
+      .from(bannerA._tabla)
+      .update({ [colOrdenA]: orderB })
+      .eq(pkDeFila(bannerA), bannerA._norm._id);
+
+    const { error: errB } = await supabaseClient
+      .from(bannerB._tabla)
+      .update({ [colOrdenB]: orderA })
+      .eq(pkDeFila(bannerB), bannerB._norm._id);
+
+    if (errA || errB) {
+      mostrarToast('Error reordenando: ' + ((errA || errB).message), true);
+    } else {
+      mostrarToast('Orden actualizado');
+      await cargarBanners();
+      await cargarHeroVideos();
+    }
+  }
+
+  // Editar banner por posición dentro de la lista fusionada
+  function abrirModalBannerPorIndice(idx) {
+    const b = listBanners[idx];
+    if (!b) return;
+    document.getElementById('formBanner').reset();
+    document.getElementById('banner_id').value = b._norm._id;
+    document.getElementById('banner_tabla').value = b._tabla;
+    document.getElementById('modalBannerTitle').innerText = 'Editar Media de Comercio (' + b._tabla + ')';
+    document.getElementById('banner_business_id').value = b._norm.negocio || '';
+    document.getElementById('banner_title').value = b._norm.titulo || '';
+    document.getElementById('banner_video_url').value = b._norm.video || '';
+    document.getElementById('modalBanner').style.display = 'flex';
+    refreshIcons();
+  }
+
+  /* ================= SUBIR ARCHIVOS (ORIGINAL) ================= */
+  async function subirArchivo(bucket, fileInput) {
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
+
+    const file = fileInput.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+    const { error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
+    if (error) throw error;
+
+    const { data } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
+    return data.publicUrl;
+  }
+
+  /* ================= GUARDAR COMERCIO (ORIGINAL) ================= */
+  async function guardarComercio(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarComercio');
+    btn.disabled = true; btn.innerText = 'Guardando...';
+
+    try {
+      const id = document.getElementById('shop_id').value;
+      const logoUrl = await subirArchivo('logos', document.getElementById('file_logo'));
+      const coverUrl = await subirArchivo('logos', document.getElementById('file_cover_image'));
+      const videoUrl = await subirArchivo('videos', document.getElementById('file_video'));
+
+      const payload = {
+        business_id: document.getElementById('shop_business_id').value,
+        name: document.getElementById('shop_name').value,
+        category: document.getElementById('shop_category').value,
+        description: document.getElementById('shop_description').value,
+        address: document.getElementById('shop_address').value,
+        whatsapp: document.getElementById('shop_whatsapp').value,
+        schedule: document.getElementById('shop_schedule').value,
+        video_url: document.getElementById('shop_video_url').value
+      };
+
+      if (logoUrl) payload.logo = logoUrl;
+      if (coverUrl) payload.cover_image = coverUrl;
+      if (videoUrl) payload.video = videoUrl;
+
+      if (id) {
+        const { error } = await supabaseClient.from('shops').update(payload).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from('shops').insert([payload]);
+        if (error) throw error;
+      }
+
+      cerrarModales();
+      await cargarComercios();
+      mostrarToast(id ? 'Comercio actualizado con éxito' : 'Comercio creado con éxito');
+    } catch (err) {
+      mostrarToast('Error: ' + err.message, true);
+    } finally {
+      btn.disabled = false; btn.innerText = 'Guardar Comercio';
+    }
+  }
+
+  /* ================= GUARDAR PRODUCTO (ORIGINAL) ================= */
+  async function guardarProducto(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarProducto');
+    btn.disabled = true; btn.innerText = 'Guardando...';
+
+    try {
+      const id = document.getElementById('product_id').value;
+      const imgUrl = await subirArchivo('logos', document.getElementById('prod_file'));
+
+      const payload = {
+        business_id: document.getElementById('prod_business_id').value,
+        name: document.getElementById('prod_name').value,
+        price: document.getElementById('prod_price').value ? parseFloat(document.getElementById('prod_price').value) : null,
+        category: document.getElementById('prod_category').value,
+        description: document.getElementById('prod_description').value
+      };
+      if (imgUrl) payload.image_url = imgUrl;
+
+      if (id) {
+        const { error } = await supabaseClient.from('shop_products').update(payload).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from('shop_products').insert([payload]);
+        if (error) throw error;
+      }
+
+      cerrarModales();
+      await cargarProductos();
+      mostrarToast(id ? 'Producto actualizado' : 'Producto agregado');
+    } catch (err) {
+      mostrarToast('Error: ' + err.message, true);
+    } finally {
+      btn.disabled = false; btn.innerText = 'Guardar Producto';
+    }
+  }
+
+  /* ================= SELECTS DE NEGOCIOS (ORIGINAL + hero video) ================= */
+  function actualizarSelectsNegocios() {
+    const defaultOption = '<option value="">HERO SLIDER PRINCIPAL (Global / Inicio)</option>';
+    const eligeComercio = '<option value="">— Selecciona el comercio dueño —</option>';
+    const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
+
+    const selProd = document.getElementById('prod_business_id');
+    const selBanner = document.getElementById('banner_business_id');
+    const selHero = document.getElementById('hvideo_business_id');
+    if (selProd) selProd.innerHTML = options;
+    // Banners = siempre de un comercio (lo global va en Hero Videos)
+    if (selBanner) selBanner.innerHTML = eligeComercio + options;
+    // Hero Videos = global por defecto
+    if (selHero) selHero.innerHTML = defaultOption + options;
+  }
+
+  /* ================= GUARDAR BANNER (ORIGINAL) ================= */
+  async function guardarBanner(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarBanner');
+    btn.disabled = true;
+    btn.innerText = 'Guardando...';
+
+    try {
+      const id = document.getElementById('banner_id').value;
+      const tablaDestino = document.getElementById('banner_tabla').value || 'shop_banners';
+      const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
+      const videoUploadedUrl = await subirArchivo('videos', document.getElementById('banner_video_file'));
+      const externalVideoUrl = document.getElementById('banner_video_url').value.trim();
+      const selectedBusiness = document.getElementById('banner_business_id').value;
+      const titulo = document.getElementById('banner_title').value || 'Media de comercio';
+      const videoFinal = videoUploadedUrl || externalVideoUrl || null;
+
+      if (!selectedBusiness) {
+        mostrarToast('Selecciona el comercio dueño de esta media.', true);
+        btn.disabled = false; btn.innerText = 'Guardar en Slider';
+        return;
+      }
+
+      if (id) {
+        // EDICIÓN: guarda en la tabla de origen de la fila
+        const fila = listBanners.find(b => String(b._norm._id) === String(id) && b._tabla === tablaDestino);
+        let resp;
+        if (tablaDestino === 'shop_banners') {
+          const payload = { title: titulo, business_id: selectedBusiness };
+          if (imgUrl) payload.image_url = imgUrl;
+          if (videoFinal) payload.video_url = videoFinal;
+          resp = await supabaseClient.from('shop_banners').update(payload).eq('id', id).select();
+        } else {
+          const valores = { titulo, negocio: selectedBusiness };
+          if (imgUrl) valores.imagen = imgUrl;
+          if (videoFinal) valores.video = videoFinal;
+          const payloadX = payloadPara(columnasExtraMedia, valores);
+          resp = await supabaseClient.from(tablaDestino).update(payloadX).eq(pkDeFila(fila || { _tabla: tablaDestino }), id).select();
+        }
+        if (resp.error) throw resp.error;
+      } else {
+        // NUEVO: se guarda en AMBAS tablas para que se vea en cualquier versión de la app
+        const payloadShop = { title: titulo, business_id: selectedBusiness, order_index: listBanners.length + 1 };
+        if (imgUrl) payloadShop.image_url = imgUrl;
+        if (videoFinal) payloadShop.video_url = videoFinal;
+        const r1 = await supabaseClient.from('shop_banners').insert([payloadShop]).select();
+        if (r1.error) throw r1.error;
+
+        if (tablaExtraMedia) {
+          const valores = { titulo, negocio: selectedBusiness, orden: listBanners.length + 1 };
+          if (imgUrl) valores.imagen = imgUrl;
+          if (videoFinal) valores.video = videoFinal;
+          const payloadX = payloadPara(columnasExtraMedia, valores);
+          if (Object.keys(payloadX).length) {
+            await supabaseClient.from(tablaExtraMedia).insert([payloadX]);
+          }
+        }
+      }
+
+      cerrarModales();
+      await cargarBanners();
+      await cargarHeroVideos();
+      mostrarToast(id ? 'Elemento actualizado' : 'Media guardada para el comercio');
+    } catch (err) {
+      console.error('Detalle error Supabase:', err);
+      mostrarToast('Error Supabase: ' + (err.message || err.details || 'Error al guardar'), true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Guardar en Slider';
+    }
+  }
+
+  /* ================= ABRIR MODALES (ORIGINAL) ================= */
+  function abrirModalComercio(id = null) {
+    document.getElementById('formComercio').reset();
+    document.getElementById('shop_id').value = '';
+    document.getElementById('modalComercioTitle').innerText = id ? 'Editar Comercio' : 'Nuevo Comercio';
+
+    if (id) {
+      const c = listShops.find(i => i.id == id);
+      if (c) {
+        document.getElementById('shop_id').value = c.id;
+        document.getElementById('shop_business_id').value = c.business_id || '';
+        document.getElementById('shop_name').value = c.name || '';
+        document.getElementById('shop_category').value = c.category || '';
+        document.getElementById('shop_description').value = c.description || '';
+        document.getElementById('shop_address').value = c.address || '';
+        document.getElementById('shop_whatsapp').value = c.whatsapp || '';
+        document.getElementById('shop_schedule').value = c.schedule || '';
+        document.getElementById('shop_video_url').value = c.video_url || '';
+      }
+    }
+    document.getElementById('modalComercio').style.display = 'flex';
+    refreshIcons();
+  }
+
+  function abrirModalProducto(id = null) {
+    document.getElementById('formProducto').reset();
+    document.getElementById('product_id').value = '';
+    document.getElementById('modalProductoTitle').innerText = id ? 'Editar Producto' : 'Nuevo Producto';
+
+    if (id) {
+      const p = listProducts.find(i => i.id == id);
+      if (p) {
+        document.getElementById('product_id').value = p.id;
+        document.getElementById('prod_business_id').value = p.business_id || '';
+        document.getElementById('prod_name').value = p.name || '';
+        document.getElementById('prod_price').value = p.price || '';
+        document.getElementById('prod_category').value = p.category || '';
+        document.getElementById('prod_description').value = p.description || '';
+      }
+    }
+    document.getElementById('modalProducto').style.display = 'flex';
+    refreshIcons();
+  }
+
+  function abrirModalBanner(id = null) {
+    document.getElementById('formBanner').reset();
+    document.getElementById('banner_id').value = '';
+    document.getElementById('banner_tabla').value = '';
+    document.getElementById('modalBannerTitle').innerText = 'Nueva Imagen / Video de Comercio';
+
+    if (id) {
+      const b = listBanners.find(i => String(i._norm?._id) === String(id));
+      if (b) {
+        document.getElementById('banner_id').value = b._norm._id;
+        document.getElementById('banner_tabla').value = b._tabla;
+        document.getElementById('banner_business_id').value = b._norm.negocio || '';
+        document.getElementById('banner_title').value = b._norm.titulo || '';
+        document.getElementById('banner_video_url').value = b._norm.video || '';
+      }
+    }
+    document.getElementById('modalBanner').style.display = 'flex';
+    refreshIcons();
+  }
+
+  function cerrarModales() {
+    document.querySelectorAll('.modal-overlay').forEach(m => { if (m.id !== 'visorMedia') m.style.display = 'none'; });
+  }
+
+  /* ================= ELIMINAR (con doble verificación real contra Supabase) ================= */
+  async function eliminarRegistro(tabla, id, callback, pk = 'id') {
+    if (!confirm('¿Estás seguro de eliminar este registro de forma permanente?')) return;
+
+    const { data, error } = await supabaseClient.from(tabla).delete().eq(pk, id).select();
+
+    if (error) {
+      mostrarToast('Error al eliminar: ' + error.message, true);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      // Doble verificación: consulta si la fila sigue existiendo
+      const { data: existe } = await supabaseClient.from(tabla).select(pk).eq(pk, id).limit(1);
+      if (!existe || existe.length === 0) {
+        mostrarToast('Registro eliminado correctamente de Supabase');
+        if (callback) callback();
+      } else {
+        mostrarToast('Supabase bloqueó el borrado (política RLS). Ejecuta el BLOQUE 2 del SQL que te compartí y vuelve a intentar.', true);
+      }
+      return;
+    }
+
+    mostrarToast('Registro eliminado correctamente de Supabase');
+    if (callback) callback();
+  }
+
+  /* ============================================================
+     NUEVO: HERO VIDEOS PROGRAMADOS (con fechas + calendario)
+     ============================================================ */
+  async function cargarHeroVideos() {
+    let rows = [];
+
+    // 1) shop_banners GLOBALES
+    let { data, error } = await supabaseClient
+      .from('shop_banners')
+      .select('*')
+      .is('business_id', null)
+      .order('order_index', { ascending: true });
+
+    if (error) {
+      const fallback = await supabaseClient.from('shop_banners').select('*').is('business_id', null).order('created_at', { ascending: false });
+      data = fallback.data || [];
+    }
+    (data || []).forEach(r => rows.push({ ...r, _tabla: 'shop_banners', _norm: normShop(r) }));
+
+    // 2) banner_videos GLOBALES (tabla que usa la app real)
+    await detectarTablaExtra();
+    if (tablaExtraMedia) {
+      const { data: bv } = await supabaseClient.from(tablaExtraMedia).select('*');
+      (bv || []).forEach(r => {
+        const n = normalizarFila(r, columnasExtraMedia);
+        if (!n.negocio) rows.push({ ...r, _tabla: tablaExtraMedia, _norm: n });
+      });
+    }
+
+    listHeroVideos = rows;
+    renderHeroVideos();
+    actualizarStats();
+  }
+
+  function estadoHeroVideo(b) {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const n = b._norm || normShop(b);
+    const ini = n.inicio, fin = n.fin;
+    if (!ini && !fin) return { texto: 'SIN FECHA', clase: 'badge neutral' };
+    if (ini && hoy < ini) return { texto: 'PROGRAMADO', clase: 'badge info' };
+    if (fin && hoy > fin) return { texto: 'EXPIRADO', clase: 'badge danger' };
+    return { texto: 'ACTIVO', clase: 'badge ok' };
+  }
+
+  function diasRestantes(b) {
+    const n = b._norm || normShop(b);
+    if (!n.fin) return '';
+    const hoy = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00');
+    const fin = new Date(n.fin + 'T00:00:00');
+    const d = Math.round((fin - hoy) / 86400000);
+    if (d < 0) return `terminó hace ${Math.abs(d)} día(s)`;
+    if (d === 0) return 'último día';
+    return `quedan ${d} día(s)`;
+  }
+
+  function renderHeroVideos() {
+    const cont = document.getElementById('tabla-herovideos');
+    if (!listHeroVideos.length) {
+      cont.innerHTML = `<p class="empty-hint">No hay contenido <strong>global</strong> en el Hero Slider todavía.<br>Usa <strong>+ Nuevo Video Programado</strong> para subir uno con fecha de inicio y fin.<br><small>La media que los comercios suben a sus tiendas aparece en la pestaña Banners Slider.</small></p>`;
+      refreshIcons();
+      return;
+    }
+
+    let html = `<table>
+      <thead><tr>
+        <th>Pos.</th><th>Video</th><th>Título</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Duración</th><th>Origen</th><th>Acciones</th>
+      </tr></thead><tbody>`;
+
+    listHeroVideos.forEach((b, i) => {
+      const n = b._norm || normShop(b);
+      const est = estadoHeroVideo(b);
+      const esPrimero = i === 0;
+      const esUltimo = i === listHeroVideos.length - 1;
+      const preview = n.video ? videoPreviewRobusta(n.video) : imgThumbRobusta(n.imagen);
+
+      html += `<tr>
+        <td><strong>#${i + 1}</strong></td>
+        <td>${preview}</td>
+        <td><strong>${n.titulo || 'Sin Título'}</strong></td>
+        <td><span class="fecha-txt">${n.inicio || '—'}</span></td>
+        <td><span class="fecha-txt">${n.fin || '—'}</span></td>
+        <td><span class="${est.clase}">${est.texto}</span></td>
+        <td><span class="dias-txt">${diasRestantes(b)}</span></td>
+        <td><span class="badge neutral" style="text-transform:none;">${b._tabla}</span></td>
+        <td class="cell-actions wide">
+          <button class="btn-secondary btn-icon" onclick="moverHeroArriba(${i})" ${esPrimero ? 'disabled' : ''} title="Subir posición"><i data-lucide="arrow-up"></i></button>
+          <button class="btn-secondary btn-icon" onclick="moverHeroAbajo(${i})" ${esUltimo ? 'disabled' : ''} title="Bajar posición"><i data-lucide="arrow-down"></i></button>
+          <button class="btn-secondary btn-icon" title="Guardar en calendario" onclick="abrirCalendarioHero(${i})"><i data-lucide="calendar-plus"></i></button>
+          <button class="btn-primary btn-icon" title="Editar" onclick="abrirModalHeroVideo(${i})"><i data-lucide="pencil"></i></button>
+          <button class="btn-danger btn-icon" title="Eliminar de Supabase" onclick="eliminarRegistro('${b._tabla}', '${n._id}', recargarHero, '${pkDeFila(b)}')"><i data-lucide="trash-2"></i></button>
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+    refreshIcons();
+  }
+
+  async function recargarHero() { await cargarBanners(); await cargarHeroVideos(); }
+
+  async function moverHeroArriba(i) { if (i <= 0) return; await intercambiarOrdenHero(i, i - 1); }
+  async function moverHeroAbajo(i) { if (i >= listHeroVideos.length - 1) return; await intercambiarOrdenHero(i, i + 1); }
+
+  async function intercambiarOrdenHero(ia, ib) {
+    const a = listHeroVideos[ia], b = listHeroVideos[ib];
+    const orderA = a._norm.orden || (ia + 1);
+    const orderB = b._norm.orden || (ib + 1);
+    const colA = a._tabla === 'shop_banners' ? 'order_index' : (colReal(columnasExtraMedia, 'orden') || 'order_index');
+    const colB = b._tabla === 'shop_banners' ? 'order_index' : (colReal(columnasExtraMedia, 'orden') || 'order_index');
+
+    const { error: errA } = await supabaseClient.from(a._tabla).update({ [colA]: orderB }).eq(pkDeFila(a), a._norm._id);
+    const { error: errB } = await supabaseClient.from(b._tabla).update({ [colB]: orderA }).eq(pkDeFila(b), b._norm._id);
+
+    if (errA || errB) mostrarToast('Error reordenando: ' + ((errA || errB).message), true);
+    else { mostrarToast('Orden actualizado'); await recargarHero(); }
+  }
+
+  function abrirModalHeroVideo(idx) {
+    document.getElementById('formHeroVideo').reset();
+    document.getElementById('hvideo_idx').value = '';
+    document.getElementById('modalHeroVideoTitle').innerText = (idx === null || idx === undefined) ? 'Nuevo Video Programado del Hero Slider' : 'Editar Video Programado';
+
+    if (idx !== null && idx !== undefined && listHeroVideos[idx]) {
+      const n = listHeroVideos[idx]._norm;
+      document.getElementById('hvideo_idx').value = idx;
+      document.getElementById('hvideo_title').value = n.titulo || '';
+      document.getElementById('hvideo_start').value = n.inicio || '';
+      document.getElementById('hvideo_end').value = n.fin || '';
+      document.getElementById('hvideo_video_url').value = n.video || '';
+    }
+    document.getElementById('modalHeroVideo').style.display = 'flex';
+    refreshIcons();
+  }
+
+  async function guardarHeroVideo(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarHeroVideo');
+    btn.disabled = true; btn.innerText = 'Guardando...';
+
+    try {
+      const idx = document.getElementById('hvideo_idx').value;
+      const existente = (idx !== '' && listHeroVideos[Number(idx)]) ? listHeroVideos[Number(idx)] : null;
+
+      const videoUp = await subirArchivo('videos', document.getElementById('hvideo_video_file'));
+      const imgUp = await subirArchivo('logos', document.getElementById('hvideo_img_file'));
+      const ext = document.getElementById('hvideo_video_url').value.trim();
+      const start = document.getElementById('hvideo_start').value || null;
+      const end = document.getElementById('hvideo_end').value || null;
+      const titulo = document.getElementById('hvideo_title').value || 'Video Hero Slider';
+      const videoFinal = videoUp || ext || null;
+
+      if (start && end && end < start) {
+        mostrarToast('La fecha de fin no puede ser anterior a la de inicio', true);
+        btn.disabled = false; btn.innerText = 'Guardar Video Programado';
+        return;
+      }
+
+      const payload = {
+        title: titulo,
+        business_id: null,   // Hero Slider = siempre GLOBAL
+        start_date: start,
+        end_date: end
+      };
+      if (imgUp) payload.image_url = imgUp;
+      if (videoFinal) payload.video_url = videoFinal;
+
+      let faltanColumnas = false;
+      let resp;
+
+      if (existente && existente._tabla === 'shop_banners') {
+        resp = await supabaseClient.from('shop_banners').update(payload).eq('id', existente._norm._id).select();
+      } else if (existente && tablaExtraMedia) {
+        // Edición sobre banner_videos con columnas reales
+        const valores = { titulo, negocio: null, inicio: start || undefined, fin: end || undefined };
+        if (imgUp) valores.imagen = imgUp;
+        if (videoFinal) valores.video = videoFinal;
+        const px = payloadPara(columnasExtraMedia, valores);
+        resp = await supabaseClient.from(tablaExtraMedia).update(px).eq(pkDeFila(existente), existente._norm._id).select();
+      } else {
+        // NUEVO: shop_banners primero
+        const todos = [...listBanners, ...listHeroVideos];
+        payload.order_index = todos.reduce((m, b2) => Math.max(m, (b2._norm && b2._norm.orden) || 0), todos.length) + 1;
+        resp = await supabaseClient.from('shop_banners').insert([payload]).select();
+      }
+
+      // Reintento sin fechas si la tabla no tiene las columnas
+      if (resp.error && /start_date|end_date|column/i.test(resp.error.message || '')) {
+        delete payload.start_date; delete payload.end_date;
+        faltanColumnas = true;
+        if (!existente) resp = await supabaseClient.from('shop_banners').insert([payload]).select();
+        else if (existente._tabla === 'shop_banners') resp = await supabaseClient.from('shop_banners').update(payload).eq('id', existente._norm._id).select();
+        else {
+          const px = payloadPara(columnasExtraMedia, { titulo, negocio: null });
+          if (videoFinal) px[colReal(columnasExtraMedia, 'video')] = videoFinal;
+          resp = await supabaseClient.from(tablaExtraMedia).update(px).eq(pkDeFila(existente), existente._norm._id).select();
+        }
+      }
+
+      if (resp.error) throw resp.error;
+
+      // NUEVO: espeja también en banner_videos para que la app lo vea sí o sí
+      let guardado = resp.data && resp.data[0] ? resp.data[0] : {};
+      if (!existente && tablaExtraMedia) {
+        const valores = { titulo, negocio: null, orden: payload.order_index, inicio: start || undefined, fin: end || undefined };
+        if (imgUp) valores.imagen = imgUp;
+        if (videoFinal) valores.video = videoFinal;
+        const px = payloadPara(columnasExtraMedia, valores);
+        // Quita video/imagen si la tabla extra no tiene esas columnas
+        Object.keys(px).forEach(k => { if (px[k] === undefined) delete px[k]; });
+        if (Object.keys(px).length) {
+          const rx = await supabaseClient.from(tablaExtraMedia).insert([px]).select();
+          if (rx.data && rx.data[0]) guardado = rx.data[0];
+        }
+      }
+
+      cerrarModales();
+      await recargarHero();
+
+      if (faltanColumnas) {
+        mostrarToast('Guardado, pero sin fechas: falta el SQL que añade start_date y end_date.', true);
+      } else {
+        mostrarToast(existente ? 'Video actualizado' : 'Video programado en el Hero Slider');
+        if (payload.start_date && payload.end_date) {
+          videoCalendarioActual = { titulo: payload.title, inicio: payload.start_date, fin: payload.end_date, id: guardado.id || 'nuevo' };
+          abrirModalCalendario();
+        }
+      }
+    } catch (err) {
+      console.error('Detalle error:', err);
+      mostrarToast('Error: ' + (err.message || 'Error al guardar'), true);
+    } finally {
+      btn.disabled = false; btn.innerText = 'Guardar Video Programado';
+    }
+  }
+
+  async function limpiarVideosExpirados() {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const expirados = listHeroVideos.filter(b => b._norm.fin && b._norm.fin < hoy);
+
+    if (!expirados.length) { mostrarToast('No hay videos expirados'); return; }
+    if (!confirm(`Se eliminarán ${expirados.length} video(s) expirado(s) del Hero Slider de forma permanente. ¿Continuar?`)) return;
+
+    const porTabla = {};
+    expirados.forEach(b => {
+      const t = b._tabla;
+      porTabla[t] = porTabla[t] || { pk: pkDeFila(b), ids: [] };
+      porTabla[t].ids.push(b._norm._id);
+    });
+
+    let borrados = 0, bloqueados = false;
+    for (const t of Object.keys(porTabla)) {
+      const { data, error } = await supabaseClient.from(t).delete().in(porTabla[t].pk, porTabla[t].ids).select();
+      if (error) { mostrarToast('Error al eliminar en ' + t + ': ' + error.message, true); continue; }
+      if (!data || !data.length) { bloqueados = true; continue; }
+      borrados += data.length;
+    }
+
+    if (bloqueados) mostrarToast('Algunos borrados fueron bloqueados por RLS en una tabla.', true);
+    else mostrarToast(`${borrados} video(s) expirado(s) eliminados`);
+    await recargarHero();
+  }
+
+  /* -------- Calendario (Google + iPhone .ics) -------- */
+  function abrirCalendarioHero(i) {
+    const b = listHeroVideos[i];
+    if (!b) return;
+    const n = b._norm || normShop(b);
+    if (!n.inicio || !n.fin) {
+      mostrarToast('Este video no tiene fechas de uso. Edítalo y agrega inicio y fin.', true);
+      return;
+    }
+    videoCalendarioActual = { titulo: n.titulo || 'Video Hero Slider', inicio: n.inicio, fin: n.fin, id: n._id };
+    abrirModalCalendario();
+  }
+
+  function abrirModalCalendario() {
+    const v = videoCalendarioActual;
+    document.getElementById('cal_titulo').innerText = 'Hero Slider: ' + v.titulo;
+    document.getElementById('cal_rango').innerText = `${v.inicio}  →  ${v.fin}`;
+    document.getElementById('modalCalendario').style.display = 'flex';
+    refreshIcons();
+  }
+
+  function fmtFechaCal(iso) { return iso.replace(/-/g, ''); }
+  function sumarDia(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function abrirGoogleCalendario() {
+    const v = videoCalendarioActual;
+    if (!v) return;
+    const base = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+    const text = encodeURIComponent('Hero Slider Sofy: ' + v.titulo);
+    const details = encodeURIComponent(`El video "${v.titulo}" estará activo en el Hero Slider del ${v.inicio} al ${v.fin}. (ID: ${v.id})`);
+    const url = `${base}&text=${text}&dates=${fmtFechaCal(v.inicio)}/${fmtFechaCal(sumarDia(v.fin))}&details=${details}`;
+    window.open(url, '_blank');
+    mostrarToast('Abre Google Calendar y pulsa "Guardar"');
+  }
+
+  function descargarICS() {
+    const v = videoCalendarioActual;
+    if (!v) return;
+    const ahora = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const alarma = fmtFechaCal(v.inicio) + 'T140000Z';
+    const lineas = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Sofy Admin//Hero Slider//ES',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:${Date.now()}-sofy@admin`,
+      `DTSTAMP:${ahora}`,
+      `DTSTART;VALUE=DATE:${fmtFechaCal(v.inicio)}`,
+      `DTEND;VALUE=DATE:${fmtFechaCal(sumarDia(v.fin))}`,
+      `SUMMARY:Hero Slider Sofy: ${v.titulo}`,
+      `DESCRIPTION:Video "${v.titulo}" activo en el Hero Slider del ${v.inicio} al ${v.fin}.`,
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      `TRIGGER;VALUE=DATE-TIME:${alarma}`,
+      `DESCRIPTION:Hoy inicia "${v.titulo}" en el Hero Slider`,
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([lineas], { type: 'text/calendar;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `hero-slider-${v.inicio}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    mostrarToast('Archivo .ics descargado: ábrelo en tu iPhone para añadirlo');
+  }
+
+  /* ============================================================
+     PERFILES DE USUARIO
+     - LECTURA: vista "profiles_with_email" si existe (incluye el correo
+       de auth.users). Si no, lee la tabla real.
+     - ESCRITURA (editar/eliminar): siempre contra la tabla real.
+     ============================================================ */
+  let profileReadTable = null;   // vista o tabla desde donde se LEE
+  const PROFILE_WRITE_CANDIDATES = ['profiles', 'perfiles', 'users', 'user_profiles', 'usuarios', 'customers', 'clientes'];
+  const PROFILE_VIEW_CANDIDATES = ['profiles_with_email', 'vista_perfiles', 'perfiles_con_correo'];
+
+  async function resolverTablaPerfiles() {
+    // Tabla REAL (para editar/eliminar)
+    if (!profileTable) {
+      for (const t of PROFILE_WRITE_CANDIDATES) {
+        const { error } = await supabaseClient.from(t).select('*').limit(1);
+        if (!error) { profileTable = t; break; }
+      }
+    }
+    // Vista con correo (solo lectura)
+    if (!profileReadTable) {
+      for (const v of PROFILE_VIEW_CANDIDATES) {
+        const { error } = await supabaseClient.from(v).select('*').limit(1);
+        if (!error) { profileReadTable = v; break; }
+      }
+      if (!profileReadTable) profileReadTable = profileTable;
+    }
+    return profileTable;
+  }
+
+  async function cargarPerfiles() {
+    const cont = document.getElementById('tabla-perfiles');
+    cont.innerHTML = `<p style="padding: 20px;">Cargando perfiles...</p>`;
+
+    const tabla = await resolverTablaPerfiles();
+    if (!tabla) {
+      cont.innerHTML = `<p class="empty-hint">No encontré la tabla de perfiles en Supabase (probé: profiles, perfiles, users, user_profiles, usuarios...).<br>Ejecuta el SQL de <strong>VERIFICACIÓN</strong> que te compartí y pásame el resultado<br>para darte el SQL exacto con el nombre real de tu tabla.</p>`;
+      return;
+    }
+
+    const origen = profileReadTable || tabla;
+    let { data, error } = await supabaseClient.from(origen).select('*').order('created_at', { ascending: false });
+    if (error) {
+      const fallback = await supabaseClient.from(origen).select('*').limit(500);
+      data = fallback.data; error = fallback.error;
+    }
+    if (error) {
+      cont.innerHTML = `<p class="empty-hint">Error al leer <strong>${origen}</strong>: ${error.message}</p>`;
+      return;
+    }
+
+    listProfiles = data || [];
+    listProfilesFiltrados = listProfiles;
+    profileColumns = [...new Set(listProfiles.flatMap(p => Object.keys(p)))];
+    renderTablaPerfiles(listProfiles);
+    actualizarStats();
+  }
+
+  function esUrlImagen(v) {
+    return typeof v === 'string' && /^https?:\/\//i.test(v) && (/\.(png|jpe?g|webp|gif|avif|bmp|svg)(\?|#|$)/i.test(v) || v.includes('/storage/'));
+  }
+
+  function renderTablaPerfiles(rows) {
+    const cont = document.getElementById('tabla-perfiles');
+    if (!rows.length) {
+      cont.innerHTML = `<p class="empty-hint">No hay perfiles que mostrar.</p>`;
+      refreshIcons();
+      return;
+    }
+
+    // Prioriza columnas típicas al frente para una mejor lectura
+    const prioridad = ['avatar_url', 'avatar', 'photo_url', 'id', 'first_name', 'nombre', 'name', 'last_name', 'apellidos', 'apellido', 'full_name', 'username', 'email', 'user_email', 'correo', 'mail', 'phone', 'telefono', 'role', 'created_at'];
+    const cols = [...profileColumns].sort((a, b) => {
+      const pa = prioridad.indexOf(a), pb = prioridad.indexOf(b);
+      return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);
+    });
+
+    const notaVista = (profileReadTable && profileReadTable !== profileTable)
+      ? ` · leyendo desde la vista <strong>${profileReadTable}</strong> (incluye correo) · los cambios se guardan en <strong>${profileTable}</strong>`
+      : '';
+    let html = `<div style="padding:12px 16px 0;font-size:12px;color:#7c8696;font-weight:600;">Tabla: <strong style="color:var(--primary);">${profileTable}</strong>${notaVista} · ${rows.length} perfil(es)</div>`;
+    html += `<table><thead><tr>` + cols.map(c => `<th>${c}</th>`).join('') + `<th>Acciones</th></tr></thead><tbody>`;
+
+    rows.forEach(p => {
+      const realIdx = listProfiles.indexOf(p);
+      html += `<tr>`;
+      cols.forEach(col => {
+        const v = p[col];
+        let celda;
+        if (v === null || v === undefined || v === '') celda = '<span style="color:#b6bec9;">—</span>';
+        else if (typeof v === 'boolean') celda = v ? '<span class="badge ok">SÍ</span>' : '<span class="badge neutral">NO</span>';
+        else if (esUrlImagen(v)) celda = `<img src="${v}" class="thumb" title="Clic para ver grande" onerror="this.outerHTML='—'" onclick="abrirVisor(this.src,'imagen')">`;
+        else if (typeof v === 'object') celda = `<span class="dyn-cell" title='${JSON.stringify(v)}'>${JSON.stringify(v)}</span>`;
+        else celda = `<span class="dyn-cell" title="${String(v).replace(/"/g, '&quot;')}">${String(v)}</span>`;
+        html += `<td>${celda}</td>`;
+      });
+      html += `<td class="cell-actions">
+          <button class="btn-primary btn-icon" title="Editar perfil" onclick="abrirModalPerfil(${realIdx})"><i data-lucide="pencil"></i></button>
+          <button class="btn-danger btn-icon" title="Eliminar perfil de Supabase" onclick="eliminarPerfil(${realIdx})"><i data-lucide="trash-2"></i></button>
+        </td></tr>`;
+    });
+
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+    refreshIcons();
+  }
+
+  function filtrarPerfiles() {
+    const q = document.getElementById('perfil_buscar').value.toLowerCase().trim();
+    if (!q) { renderTablaPerfiles(listProfiles); return; }
+    const rows = listProfiles.filter(p =>
+      Object.values(p).some(v => v !== null && v !== undefined && String(v).toLowerCase().includes(q))
+    );
+    renderTablaPerfiles(rows);
+  }
+
+  function abrirModalPerfil(idx) {
+    const p = listProfiles[idx];
+    if (!p) return;
+    document.getElementById('perfil_idx').value = idx;
+    document.getElementById('modalPerfilTitle').innerText = 'Editar Perfil';
+
+    let campos = '';
+    profileColumns.forEach(col => {
+      const v = p[col];
+      // El correo viene de auth.users (vista): se muestra pero no se edita desde aquí
+      const soloLectura = (col === 'id' || col === 'user_id' || col === 'created_at' || col === 'updated_at' || col === 'user_email' || col === 'email' || col === 'correo');
+      if (soloLectura) {
+        campos += `<div class="form-group"><label>${col} (solo lectura)</label><input type="text" data-col="${col}" value="${String(v ?? '').replace(/"/g, '&quot;')}" readonly style="background:#eef1f5;color:#7c8696;"></div>`;
+      } else if (typeof v === 'boolean') {
+        campos += `<div class="form-group"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" data-col="${col}" ${v ? 'checked' : ''} style="width:18px;height:18px;"> ${col}</label></div>`;
+      } else if (v !== null && typeof v === 'object') {
+        campos += `<div class="form-group"><label>${col} (JSON)</label><textarea rows="3" class="js-json" data-col="${col}">${JSON.stringify(v)}</textarea></div>`;
+      } else {
+        campos += `<div class="form-group"><label>${col}</label><input type="text" data-col="${col}" value="${String(v ?? '').replace(/"/g, '&quot;')}"></div>`;
       }
     });
 
-    function mostrarToast(mensaje, esError = false) {
-      const toast = document.getElementById("toast");
-      toast.innerText = mensaje;
-      toast.style.backgroundColor = esError ? "var(--danger)" : "var(--success)";
-      toast.className = "show";
-      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-    }
+    document.getElementById('perfil_campos').innerHTML = campos;
+    document.getElementById('modalPerfil').style.display = 'flex';
+    refreshIcons();
+  }
 
-    async function cargarTodo() {
-      await Promise.all([cargarComercios(), cargarProductos(), cargarBanners()]);
-      actualizarSelectsNegocios();
-    }
+  async function guardarPerfil(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarPerfil');
+    btn.disabled = true; btn.innerText = 'Guardando...';
 
-    function cambiarTab(tabName) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      event.target.classList.add('active');
-      document.getElementById('tab-' + tabName).classList.add('active');
-    }
+    try {
+      const idx = Number(document.getElementById('perfil_idx').value);
+      const p = listProfiles[idx];
+      const updates = {};
 
-    // --- COMERCIOS ---
-    async function cargarComercios() {
-      const { data, error } = await supabaseClient.from('shops').select('*').order('id', { ascending: false });
-      if (error) return mostrarToast('Error cargando comercios: ' + error.message, true);
-      listShops = data || [];
-      
-      let html = `<table><thead><tr><th>ID / BusinessID</th><th>Logo</th><th>Nombre</th><th>Categoría</th><th>Portada</th><th>Video</th><th>Acciones</th></tr></thead><tbody>`;
-      listShops.forEach(c => {
-        const logo = c.logo ? `<img src="${c.logo}" class="thumb">` : '—';
-        const cover = c.cover_image ? `<img src="${c.cover_image}" class="thumb">` : '—';
-        const video = c.video || c.video_url || c.cover_video ? `<a href="${c.video || c.video_url || c.cover_video}" target="_blank" class="media-link">▶ Ver Video</a>` : '—';
-        
-        html += `<tr>
-          <td>#${c.id} <br><small style="color:#888;">${c.business_id || 'Sin ID'}</small></td>
-          <td>${logo}</td>
-          <td><strong>${c.name || ''}</strong></td>
-          <td>${c.category || ''}</td>
-          <td>${cover}</td>
-          <td>${video}</td>
-          <td style="min-width: 110px;">
-            <button class="btn-primary" onclick="abrirModalComercio(${c.id})">✏️</button>
-            <button class="btn-danger" onclick="eliminarRegistro('shops', ${c.id}, cargarComercios)">🗑️</button>
-          </td>
-        </tr>`;
-      });
-      html += `</tbody></table>`;
-      document.getElementById('tabla-comercios').innerHTML = html;
-      actualizarSelectsNegocios();
-    }
-
-    // --- PRODUCTOS ---
-    async function cargarProductos() {
-      const { data, error } = await supabaseClient.from('shop_products').select('*').order('created_at', { ascending: false });
-      if (error) return console.error(error);
-      listProducts = data || [];
-
-      let html = `<table><thead><tr><th>Imagen</th><th>Producto</th><th>Comercio (ID)</th><th>Precio</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>`;
-      listProducts.forEach(p => {
-        const img = p.image_url ? `<img src="${p.image_url}" class="thumb">` : '—';
-        html += `<tr>
-          <td>${img}</td>
-          <td><strong>${p.name || ''}</strong></td>
-          <td>${p.business_id || ''}</td>
-          <td>$${p.price || 0}</td>
-          <td>${p.category || ''}</td>
-          <td style="min-width: 110px;">
-            <button class="btn-primary" onclick="abrirModalProducto('${p.id}')">✏️</button>
-            <button class="btn-danger" onclick="eliminarRegistro('shop_products', '${p.id}', cargarProductos)">🗑️</button>
-          </td>
-        </tr>`;
-      });
-      html += `</tbody></table>`;
-      document.getElementById('tabla-productos').innerHTML = html;
-    }
-
-    // --- BANNERS / VIDEOS DEL HERO SLIDER ---
-    async function cargarBanners() {
-      const { data, error } = await supabaseClient
-        .from('shop_banners')
-        .select('*')
-        .order('order_index', { ascending: true });
-
-      if (error) {
-        console.error('Error al cargar banners/videos:', error);
-        const fallback = await supabaseClient.from('shop_banners').select('*').order('created_at', { ascending: false });
-        listBanners = fallback.data || [];
-      } else {
-        listBanners = data || [];
-      }
-
-      let html = `<table>
-        <thead>
-          <tr>
-            <th>Posición</th>
-            <th>Vista Previa / Media</th>
-            <th>Título / Ref</th>
-            <th>Tipo</th>
-            <th>Comercio (ID)</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-      listBanners.forEach((b, index) => {
-        let mediaPreview = '—';
-        let tipo = 'Imagen';
-
-        if (b.video_url) {
-          mediaPreview = `<video src="${b.video_url}" width="80" height="50" style="border-radius:6px; object-fit:cover;" autoplay muted loop></video>`;
-          tipo = '🎥 Video';
-        } else if (b.image_url) {
-          mediaPreview = `<img src="${b.image_url}" class="thumb">`;
-          tipo = '🖼️ Imagen';
+      document.querySelectorAll('#formPerfil [data-col]').forEach(el => {
+        if (el.readOnly) return;
+        const col = el.dataset.col;
+        const original = p[col];
+        if (el.type === 'checkbox') updates[col] = el.checked;
+        else if (el.classList.contains('js-json')) {
+          try { updates[col] = el.value.trim() ? JSON.parse(el.value) : null; } catch (ex) { /* ignora JSON inválido */ }
+        } else if (typeof original === 'number') {
+          updates[col] = el.value === '' ? null : Number(el.value);
+        } else {
+          updates[col] = (el.value === '' && original === null) ? null : el.value;
         }
-
-        const esPrimero = index === 0;
-        const esUltimo = index === listBanners.length - 1;
-
-        html += `<tr>
-          <td><strong>#${index + 1}</strong></td>
-          <td>${mediaPreview}</td>
-          <td><strong>${b.title || 'Sin Título'}</strong></td>
-          <td><span style="font-size:11px; background:#e9ecef; padding:4px 8px; border-radius:10px; font-weight:bold;">${tipo}</span></td>
-          <td>${b.business_id || 'General / Global'}</td>
-          <td style="min-width: 170px;">
-            <button class="btn-secondary" onclick="moverBannerArriba(${index})" ${esPrimero ? 'disabled' : ''} title="Subir posición">⬆️</button>
-            <button class="btn-secondary" onclick="moverBannerAbajo(${index})" ${esUltimo ? 'disabled' : ''} title="Bajar posición">⬇️</button>
-            <button class="btn-primary" onclick="abrirModalBanner('${b.id}')">✏️</button>
-            <button class="btn-danger" onclick="eliminarRegistro('shop_banners', '${b.id}', cargarBanners)">🗑️</button>
-          </td>
-        </tr>`;
       });
 
-      html += `</tbody></table>`;
-      document.getElementById('tabla-banners').innerHTML = html;
+      // Intenta por 'id' y, si la tabla no usa 'id', por 'user_id'
+      let resp = ('id' in p)
+        ? await supabaseClient.from(profileTable).update(updates).eq('id', p.id).select()
+        : await supabaseClient.from(profileTable).update(updates).eq('user_id', p.user_id).select();
+
+      if (resp.error) throw resp.error;
+      if (!resp.data || resp.data.length === 0) {
+        throw new Error('Supabase bloqueó la edición (RLS). Ejecuta el SQL de políticas para la tabla "' + profileTable + '".');
+      }
+
+      cerrarModales();
+      await cargarPerfiles();
+      mostrarToast('Perfil actualizado correctamente');
+    } catch (err) {
+      mostrarToast('Error: ' + (err.message || 'No se pudo guardar'), true);
+    } finally {
+      btn.disabled = false; btn.innerText = 'Guardar Perfil';
+    }
+  }
+
+  async function eliminarPerfil(idx) {
+    const p = listProfiles[idx];
+    if (!p) return;
+    const nombre = p.full_name || p.name || p.nombre || p.email || p.id;
+    if (!confirm(`¿Eliminar permanentemente el perfil de "${nombre}"?\n\nNota: esto borra la fila de la tabla "${profileTable}". El usuario de Auth (login) se elimina aparte desde Authentication en Supabase si es necesario.`)) return;
+
+    let resp = ('id' in p)
+      ? await supabaseClient.from(profileTable).delete().eq('id', p.id).select()
+      : await supabaseClient.from(profileTable).delete().eq('user_id', p.user_id).select();
+
+    if (resp.error) return mostrarToast('Error al eliminar: ' + resp.error.message, true);
+    if (!resp.data || resp.data.length === 0) {
+      return mostrarToast('Supabase bloqueó el borrado (RLS). Ejecuta el SQL de políticas para "' + profileTable + '".', true);
     }
 
-    // --- FUNCIONES PARA REORDENAR VIDEOS/BANNERS ---
-    async function moverBannerArriba(index) {
-      if (index <= 0) return;
-      await intercambiarOrdenBanners(index, index - 1);
+    mostrarToast('Perfil eliminado correctamente de Supabase');
+    await cargarPerfiles();
+  }
+
+  /* ============================================================
+     NUEVO: MEDIA — Administración de Supabase Storage
+     ============================================================ */
+  /* ---- Auto-descubrimiento de buckets ---- */
+  async function descubrirBuckets() {
+    const cont = document.getElementById('media-chips');
+    let nombres = [];
+
+    // 1) Intenta listar todos los buckets del proyecto
+    try {
+      const { data } = await supabaseClient.storage.listBuckets();
+      if (Array.isArray(data) && data.length) nombres = data.map(b => b.id);
+    } catch (e) { /* sin permiso de listBuckets con anon */ }
+
+    // 2) Si no se pudo, prueba los nombres más comunes uno por uno
+    if (!nombres.length) {
+      const candidatos = ['logos', 'videos', 'avatars', 'productos', 'products', 'product_images', 'banners', 'covers', 'portadas', 'imagenes', 'images', 'media', 'uploads', 'public', 'files'];
+      const checks = await Promise.all(candidatos.map(async (nombre) => {
+        try {
+          const { error } = await supabaseClient.storage.from(nombre).list('', { limit: 1 });
+          return error ? null : nombre;
+        } catch (e) { return null; }
+      }));
+      nombres = checks.filter(Boolean);
     }
 
-    async function moverBannerAbajo(index) {
-      if (index >= listBanners.length - 1) return;
-      await intercambiarOrdenBanners(index, index + 1);
+    if (!nombres.length) nombres = ['logos', 'videos', 'avatars'];
+
+    cont.innerHTML = nombres.map((b, idx) =>
+      `<button class="chip ${b === mediaEstado.bucket ? 'active' : ''}" data-bucket="${b}" onclick="setBucket('${b}')"><i data-lucide="hard-drive"></i>${b}</button>`
+    ).join('');
+
+    // Si el bucket actual no existe, cambia al primero descubierto
+    if (!nombres.includes(mediaEstado.bucket)) {
+      mediaEstado.bucket = nombres[0];
+      mediaEstado.path = '';
+    }
+    refreshIcons();
+  }
+
+  function marcarChipActivo() {
+    document.querySelectorAll('#media-chips .chip').forEach(ch =>
+      ch.classList.toggle('active', ch.dataset.bucket === mediaEstado.bucket)
+    );
+  }
+
+  function setBucket(b) {
+    if (!b) return mostrarToast('Escribe el nombre del bucket', true);
+    mediaEstado.bucket = b;
+    mediaEstado.path = '';
+    marcarChipActivo();
+    mediaEstado.abierto = true;
+    cargarMedia();
+  }
+
+  function rutaCompleta(nombre) {
+    return (mediaEstado.path ? mediaEstado.path + '/' : '') + nombre;
+  }
+
+  function urlPublica(full) {
+    return supabaseClient.storage.from(mediaEstado.bucket).getPublicUrl(full).data.publicUrl + '?v=' + mediaEstado.v;
+  }
+
+  function tipoArchivo(it) {
+    const n = (it.name || '').toLowerCase();
+    const mime = (it.metadata && it.metadata.mimetype) || '';
+    if (mime.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogg)$/.test(n)) return 'video';
+    if (mime.startsWith('image/') || /\.(png|jpe?g|webp|gif|avif|bmp|svg)$/.test(n)) return 'imagen';
+    return 'otro';
+  }
+
+  function formatoPeso(bytes) {
+    if (!bytes && bytes !== 0) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  async function cargarMedia() {
+    const grid = document.getElementById('media-grid');
+    grid.innerHTML = `<p class="empty-hint">Cargando archivos del bucket "${mediaEstado.bucket}"...</p>`;
+    document.getElementById('media-ruta').innerText = mediaEstado.bucket + ':/' + (mediaEstado.path || '');
+
+    const { data, error } = await supabaseClient.storage
+      .from(mediaEstado.bucket)
+      .list(mediaEstado.path || '', { limit: 300, sortBy: { column: 'name', order: 'asc' } });
+
+    if (error) {
+      grid.innerHTML = `<p class="empty-hint">No se pudo listar el bucket <strong>"${mediaEstado.bucket}"</strong>.<br>Verifica que exista, que sea público y que el SQL de políticas de Storage esté aplicado.<br><small>${error.message}</small></p>`;
+      return;
     }
 
-    async function intercambiarOrdenBanners(indexA, indexB) {
-      const bannerA = listBanners[indexA];
-      const bannerB = listBanners[indexB];
+    mediaEstado.items = (data || []).filter(it => it.name !== '.emptyFolderPlaceholder');
+    mediaEstado.v = Date.now();
+    renderMedia();
+  }
 
-      // CORRECCIÓN APLICADA AQUÍ (|| en lugar de ??)
-      const orderA = bannerA.order_index || (indexA + 1);
-      const orderB = bannerB.order_index || (indexB + 1);
+  function renderMedia() {
+    const grid = document.getElementById('media-grid');
+    const items = mediaEstado.items;
 
-      // Intercambiamos posiciones en Supabase
-      const { error: errA } = await supabaseClient
-        .from('shop_banners')
-        .update({ order_index: orderB })
-        .eq('id', bannerA.id);
+    if (!items.length) {
+      grid.innerHTML = `<p class="empty-hint">Esta carpeta está vacía.<br>Puedes subir archivos con el botón <strong>Subir archivos</strong>.</p>`;
+      refreshIcons();
+      return;
+    }
 
-      const { error: errB } = await supabaseClient
-        .from('shop_banners')
-        .update({ order_index: orderA })
-        .eq('id', bannerB.id);
+    let html = '';
+    items.forEach((it, i) => {
+      const esCarpeta = it.id === null;
 
-      if (errA || errB) {
-        mostrarToast('Error reordenando videos: ' + ((errA || errB).message), true);
+      if (esCarpeta) {
+        html += `<div class="media-card">
+          <div class="media-folder" onclick="entrarCarpeta(${i})" title="Abrir carpeta">
+            <i data-lucide="folder"></i><span>${it.name}</span>
+          </div>
+          <div class="media-info"><div class="media-name">${it.name}</div><div class="media-meta">Carpeta</div></div>
+        </div>`;
+        return;
+      }
+
+      const full = rutaCompleta(it.name);
+      const url = urlPublica(full);
+      const tipo = tipoArchivo(it);
+      const peso = it.metadata ? formatoPeso(it.metadata.size) : '';
+
+      let preview;
+      if (tipo === 'imagen') preview = `<img src="${url}" loading="lazy" title="Clic para ver grande" onclick="abrirVisor(this.dataset.url,'imagen')" data-url="${url}" onerror="this.parentElement.innerHTML='<i data-lucide=&quot;image-off&quot;></i>'">`;
+      else if (tipo === 'video') preview = `<video src="${url}" muted loop playsinline preload="metadata" title="Clic para ver grande" onclick="abrirVisor(this.dataset.url,'video')" data-url="${url}" onmouseover="this.play()" onmouseout="this.pause()"></video>`;
+      else preview = `<div style="cursor:zoom-in;" onclick="abrirVisor('${url}','imagen')"><i data-lucide="file"></i></div>`;
+
+      html += `<div class="media-card">
+        <div class="media-preview">${preview}</div>
+        <div class="media-info">
+          <div class="media-name" title="${it.name}">${it.name}</div>
+          <div class="media-meta">${tipo === 'video' ? 'Video' : tipo === 'imagen' ? 'Imagen' : 'Archivo'}${peso ? ' · ' + peso : ''}</div>
+        </div>
+        <div class="media-actions">
+          <button class="btn-primary btn-icon" title="Reemplazar archivo" onclick="mediaReemplazar(${i})"><i data-lucide="replace"></i></button>
+          <button class="btn-secondary btn-icon" title="Renombrar" onclick="mediaRenombrar(${i})"><i data-lucide="pencil-line"></i></button>
+          <button class="btn-secondary btn-icon" title="Descargar" onclick="mediaDescargar(${i})"><i data-lucide="download"></i></button>
+          <button class="btn-danger btn-icon" title="Eliminar del bucket" onclick="mediaEliminar(${i})"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>`;
+    });
+
+    grid.innerHTML = html;
+    refreshIcons();
+  }
+
+  function entrarCarpeta(i) {
+    mediaEstado.path = rutaCompleta(mediaEstado.items[i].name);
+    cargarMedia();
+  }
+
+  function subirNivel() {
+    if (!mediaEstado.path) { mostrarToast('Ya estás en la raíz del bucket'); return; }
+    mediaEstado.path = mediaEstado.path.split('/').slice(0, -1).join('/');
+    cargarMedia();
+  }
+
+  async function mediaSubir(input) {
+    if (!input.files || !input.files.length) return;
+    mostrarToast(`Subiendo ${input.files.length} archivo(s)...`);
+    let errores = 0;
+    for (const file of input.files) {
+      const full = rutaCompleta(`${Date.now()}_${file.name.replace(/[^\w.\-]/g, '_')}`);
+      const { error } = await supabaseClient.storage.from(mediaEstado.bucket).upload(full, file);
+      if (error) errores++;
+    }
+    input.value = '';
+    if (errores) mostrarToast(`${errores} archivo(s) fallaron (revisa políticas de Storage)`, true);
+    else mostrarToast('Archivo(s) subido(s) correctamente');
+    cargarMedia();
+  }
+
+  function mediaReemplazar(i) {
+    mediaReemplazarIdx = i;
+    document.getElementById('media_reemplazar_file').click();
+  }
+
+  async function procesarReemplazo(input) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file || mediaReemplazarIdx === null) return;
+    const it = mediaEstado.items[mediaReemplazarIdx];
+    if (!it) return;
+    const full = rutaCompleta(it.name);
+
+    // Reemplaza el contenido conservando el mismo nombre/ruta
+    let { error } = await supabaseClient.storage.from(mediaEstado.bucket).update(full, file, { upsert: true });
+    if (error) {
+      const res = await supabaseClient.storage.from(mediaEstado.bucket).upload(full, file, { upsert: true });
+      error = res.error;
+    }
+    if (error) return mostrarToast('No se pudo reemplazar: ' + error.message + ' (revisa políticas de Storage)', true);
+
+    mostrarToast(`"${it.name}" reemplazado correctamente`);
+    cargarMedia();
+  }
+
+  async function mediaRenombrar(i) {
+    const it = mediaEstado.items[i];
+    const nuevo = prompt('Nuevo nombre completo (incluye la extensión):', it.name);
+    if (!nuevo || nuevo === it.name) return;
+    const { error } = await supabaseClient.storage.from(mediaEstado.bucket).move(rutaCompleta(it.name), rutaCompleta(nuevo));
+    if (error) return mostrarToast('No se pudo renombrar: ' + error.message, true);
+    mostrarToast('Archivo renombrado. Ojo: si estaba referenciado en la app, actualiza la URL en su registro.');
+    cargarMedia();
+  }
+
+  function mediaDescargar(i) {
+    const it = mediaEstado.items[i];
+    const a = document.createElement('a');
+    a.href = urlPublica(rutaCompleta(it.name));
+    a.download = it.name;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  async function mediaEliminar(i) {
+    const it = mediaEstado.items[i];
+    const full = rutaCompleta(it.name);
+    if (!confirm(`¿Eliminar "${it.name}" permanentemente del bucket "${mediaEstado.bucket}"?\nEsta acción no se puede deshacer.`)) return;
+
+    const { data, error } = await supabaseClient.storage.from(mediaEstado.bucket).remove([full]);
+    if (error) return mostrarToast('No se pudo eliminar: ' + error.message, true);
+
+    if (!data || data.length === 0) {
+      // Doble verificación: vuelve a listar la carpeta para ver si el archivo sigue ahí
+      const { data: restantes } = await supabaseClient.storage
+        .from(mediaEstado.bucket)
+        .list(mediaEstado.path || '', { limit: 500 });
+      const sigueAhi = (restantes || []).some(x => x.name === it.name);
+      if (!sigueAhi) {
+        mostrarToast(`"${it.name}" eliminado del bucket`);
+        cargarMedia();
       } else {
-        mostrarToast('Orden actualizado');
-        await cargarBanners();
+        mostrarToast('Supabase bloqueó el borrado (políticas de Storage). Ejecuta el BLOQUE 3 del SQL que te compartí.', true);
       }
+      return;
     }
 
-    // --- SUBIR ARCHIVOS ---
-    async function subirArchivo(bucket, fileInput) {
-      if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
-      
-      const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      
-      const { error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
-      if (error) throw error;
-      
-      const { data } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
-      return data.publicUrl;
-    }
-    
-    // --- GUARDAR DATOS ---
-    async function guardarComercio(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnGuardarComercio');
-      btn.disabled = true; btn.innerText = 'Guardando...';
-
-      try {
-        const id = document.getElementById('shop_id').value;
-        const logoUrl = await subirArchivo('logos', document.getElementById('file_logo'));
-        const coverUrl = await subirArchivo('logos', document.getElementById('file_cover_image'));
-        const videoUrl = await subirArchivo('videos', document.getElementById('file_video'));
-
-        const payload = {
-          business_id: document.getElementById('shop_business_id').value,
-          name: document.getElementById('shop_name').value,
-          category: document.getElementById('shop_category').value,
-          description: document.getElementById('shop_description').value,
-          address: document.getElementById('shop_address').value,
-          whatsapp: document.getElementById('shop_whatsapp').value,
-          schedule: document.getElementById('shop_schedule').value,
-          video_url: document.getElementById('shop_video_url').value
-        };
-
-        if (logoUrl) payload.logo = logoUrl;
-        if (coverUrl) payload.cover_image = coverUrl;
-        if (videoUrl) payload.video = videoUrl;
-
-        if (id) {
-          const { error } = await supabaseClient.from('shops').update(payload).eq('id', id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabaseClient.from('shops').insert([payload]);
-          if (error) throw error;
-        }
-
-        cerrarModales();
-        await cargarComercios();
-        mostrarToast(id ? 'Comercio actualizado con éxito' : 'Comercio creado con éxito');
-      } catch (err) { 
-        mostrarToast('Error: ' + err.message, true); 
-      } finally {
-        btn.disabled = false; btn.innerText = 'Guardar Comercio';
-      }
-    }
-
-    async function guardarProducto(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnGuardarProducto');
-      btn.disabled = true; btn.innerText = 'Guardando...';
-
-      try {
-        const id = document.getElementById('product_id').value;
-        const imgUrl = await subirArchivo('logos', document.getElementById('prod_file'));
-        
-        const payload = {
-          business_id: document.getElementById('prod_business_id').value,
-          name: document.getElementById('prod_name').value,
-          price: document.getElementById('prod_price').value ? parseFloat(document.getElementById('prod_price').value) : null,
-          category: document.getElementById('prod_category').value,
-          description: document.getElementById('prod_description').value
-        };
-        if (imgUrl) payload.image_url = imgUrl;
-
-        if (id) {
-          const { error } = await supabaseClient.from('shop_products').update(payload).eq('id', id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabaseClient.from('shop_products').insert([payload]);
-          if (error) throw error;
-        }
-
-        cerrarModales();
-        await cargarProductos();
-        mostrarToast(id ? 'Producto actualizado' : 'Producto agregado');
-      } catch (err) { 
-        mostrarToast('Error: ' + err.message, true); 
-      } finally {
-        btn.disabled = false; btn.innerText = 'Guardar Producto';
-      }
-    }
-
-    // --- ACTUALIZAR DESPLEGABLES DE NEGOCIOS ---
-    function actualizarSelectsNegocios() {
-      const defaultOption = '<option value="">🌟 HERO SLIDER PRINCIPAL (Global / Inicio)</option>';
-      const options = listShops.map(s => `<option value="${s.business_id || s.id}">${s.name} (${s.business_id || s.id})</option>`).join('');
-      
-      document.getElementById('prod_business_id').innerHTML = options;
-      document.getElementById('banner_business_id').innerHTML = defaultOption + options;
-    }
-
-    // --- GUARDAR BANNER O VIDEO DEL HERO SLIDER ---
-    async function guardarBanner(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnGuardarBanner');
-      btn.disabled = true;
-      btn.innerText = 'Guardando...';
-
-      try {
-        const id = document.getElementById('banner_id').value;
-        const imgUrl = await subirArchivo('logos', document.getElementById('banner_file'));
-        const videoUploadedUrl = await subirArchivo('videos', document.getElementById('banner_video_file'));
-        const externalVideoUrl = document.getElementById('banner_video_url').value.trim();
-        const selectedBusiness = document.getElementById('banner_business_id').value;
-
-        const payload = {
-          title: document.getElementById('banner_title').value || 'Video Hero Slider',
-          business_id: (selectedBusiness && selectedBusiness !== '') ? selectedBusiness : null
-        };
-
-        if (imgUrl) payload.image_url = imgUrl;
-
-        // Asigna video subido al bucket o la URL externa
-        if (videoUploadedUrl) {
-          payload.video_url = videoUploadedUrl;
-        } else if (externalVideoUrl) {
-          payload.video_url = externalVideoUrl;
-        }
-
-        if (id) {
-          const { error } = await supabaseClient.from('shop_banners').update(payload).eq('id', id);
-          if (error) throw error;
-        } else {
-          // Asigna el nuevo elemento al final del orden existente
-          payload.order_index = listBanners.length + 1;
-          const { error } = await supabaseClient.from('shop_banners').insert([payload]);
-          if (error) throw error;
-        }
-
-        cerrarModales();
-        await cargarBanners();
-        mostrarToast(id ? 'Elemento actualizado' : 'Video guardado en Hero Slider');
-      } catch (err) {
-        console.error('Detalle error Supabase:', err);
-        mostrarToast('Error Supabase: ' + (err.message || err.details || 'Error al guardar'), true);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Guardar en Slider';
-      }
-    }
-    
-    function abrirModalComercio(id = null) {
-      document.getElementById('formComercio').reset();
-      document.getElementById('shop_id').value = '';
-      document.getElementById('modalComercioTitle').innerText = id ? 'Editar Comercio' : 'Nuevo Comercio';
-      
-      if (id) {
-        const c = listShops.find(i => i.id == id);
-        if (c) {
-          document.getElementById('shop_id').value = c.id;
-          document.getElementById('shop_business_id').value = c.business_id || '';
-          document.getElementById('shop_name').value = c.name || '';
-          document.getElementById('shop_category').value = c.category || '';
-          document.getElementById('shop_description').value = c.description || '';
-          document.getElementById('shop_address').value = c.address || '';
-          document.getElementById('shop_whatsapp').value = c.whatsapp || '';
-          document.getElementById('shop_schedule').value = c.schedule || '';
-          document.getElementById('shop_video_url').value = c.video_url || '';
-        }
-      }
-      document.getElementById('modalComercio').style.display = 'flex';
-    }
-
-    function abrirModalProducto(id = null) { 
-      document.getElementById('formProducto').reset();
-      document.getElementById('product_id').value = '';
-      document.getElementById('modalProductoTitle').innerText = id ? 'Editar Producto' : 'Nuevo Producto';
-
-      if (id) {
-        const p = listProducts.find(i => i.id == id);
-        if (p) {
-          document.getElementById('product_id').value = p.id;
-          document.getElementById('prod_business_id').value = p.business_id || '';
-          document.getElementById('prod_name').value = p.name || '';
-          document.getElementById('prod_price').value = p.price || '';
-          document.getElementById('prod_category').value = p.category || '';
-          document.getElementById('prod_description').value = p.description || '';
-        }
-      }
-      document.getElementById('modalProducto').style.display = 'flex'; 
-    }
-
-    function abrirModalBanner(id = null) { 
-      document.getElementById('formBanner').reset();
-      document.getElementById('banner_id').value = '';
-      document.getElementById('modalBannerTitle').innerText = id ? 'Editar Video / Banner' : 'Nuevo Video / Banner para Slider';
-
-      if (id) {
-        const b = listBanners.find(i => i.id == id);
-        if (b) {
-          document.getElementById('banner_id').value = b.id;
-          document.getElementById('banner_business_id').value = b.business_id || '';
-          document.getElementById('banner_title').value = b.title || '';
-          document.getElementById('banner_video_url').value = b.video_url || '';
-        }
-      }
-      document.getElementById('modalBanner').style.display = 'flex'; 
-    }
-
-    function cerrarModales() { 
-      document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); 
-    }
-
-    async function eliminarRegistro(tabla, id, callback) {
-      if (!confirm('¿Estás seguro de eliminar este registro de forma permanente?')) return;
-      const { error } = await supabaseClient.from(tabla).delete().eq('id', id);
-      if (error) {
-        mostrarToast('Error al eliminar: ' + error.message, true);
-      } else {
-        mostrarToast('Registro eliminado correctamente');
-        callback();
-      }
-    }
-  </script>
+    mostrarToast(`"${it.name}" eliminado del bucket`);
+    cargarMedia();
+  }
+</script>
 </body>
 </html>
